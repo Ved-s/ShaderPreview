@@ -15,24 +15,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+
+    - name: Build android project
+      uses: igotinfected-ci/build-monogame@v2
       with:
-        dotnet-version: 6.0.x
-        
-    - name: Install MGCB
-      run: dotnet tool install -g dotnet-mgcb
-      shell: pwsh
-      
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Restore tools
-      run: dotnet tool restore
-      shell: pwsh
-      
-    - name: Build
-      run: dotnet build --no-restore
+        solution-path: '${{ github.workspace }}\ShaderPreview.sln'
+        content-mgcb-path: '${{ github.workspace }}\Content'
+        content-mgcb-platform: "Windows"
+        csproj-path: '${{ github.workspace }}\ShaderPreview.csproj'
+        build-target: "Build"
+        build-configuration: "Release"
       
     - name: Upload artifact
       uses: actions/upload-artifact@v3
