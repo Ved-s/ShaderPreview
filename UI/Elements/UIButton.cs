@@ -5,7 +5,6 @@ using ShaderPreview.Structures;
 using ShaderPreview.UI.Helpers;
 using System;
 using System.Linq;
-using System.Security.Cryptography;
 
 namespace ShaderPreview.UI.Elements
 {
@@ -26,6 +25,9 @@ namespace ShaderPreview.UI.Elements
         public Vec2 TextAlign;
 
         public Color TextColor = Color.White;
+        public Color HoverTextColor = Color.White;
+        public Color SelectedTextColor = Color.White;
+        public Color ClickedTextColor = Color.White;
 
         public Color BackColor = new(48, 48, 48);
         public Color HoverBackColor = new(64, 64, 64);
@@ -33,6 +35,10 @@ namespace ShaderPreview.UI.Elements
         public Color ClickedBackColor = new(96, 96, 96);
 
         public Color BorderColor = new(100, 100, 100);
+
+        public Texture2D? Image;
+        public Rectangle? ImageFrame = null;
+        public Vec2 ImageAlign;
 
         public bool CanDeselect = true;
         public bool Selected
@@ -84,31 +90,53 @@ namespace ShaderPreview.UI.Elements
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
         {
+            Color textColor;
+
             if (Hovered && Root.MouseState.LeftButton == ButtonState.Pressed)
+            {
                 spriteBatch.FillRectangle(ScreenRect, ClickedBackColor);
+                textColor = ClickedTextColor;
+            }
             else if (Selected)
+            {
                 spriteBatch.FillRectangle(ScreenRect, SelectedBackColor);
+                textColor = SelectedTextColor;
+            }
             else if (Hovered)
+            {
                 spriteBatch.FillRectangle(ScreenRect, HoverBackColor);
+                textColor = HoverTextColor;
+            }
             else
+            {
                 spriteBatch.FillRectangle(ScreenRect, BackColor);
+                textColor = TextColor;
+            }
 
             spriteBatch.DrawRectangle(ScreenRect, BorderColor);
 
-            if (Lines is null || Font is null)
-                return;
-
-            float y = Padding.Top + ScreenRect.Y + (ScreenRect.Height - Padding.Vertical - Lines.Length * (Font.LineSpacing - 4)) * TextAlign.Y;
-
-            foreach (string line in Lines)
+            if (Lines is not null && Font is not null)
             {
-                float lineWidth = Font.MeasureString(line).X;
+                float y = Padding.Top + ScreenRect.Y + (ScreenRect.Height - Padding.Vertical - Lines.Length * (Font.LineSpacing - 4)) * TextAlign.Y;
 
-                float x = Padding.Left + ScreenRect.X + (ScreenRect.Width - Padding.Horizontal - lineWidth) * TextAlign.X;
+                foreach (string line in Lines)
+                {
+                    float lineWidth = Font.MeasureString(line).X;
 
-                spriteBatch.DrawString(Font, line, new(x, y), TextColor);
+                    float x = Padding.Left + ScreenRect.X + (ScreenRect.Width - Padding.Horizontal - lineWidth) * TextAlign.X;
 
-                y += Font.LineSpacing - 4;
+                    spriteBatch.DrawString(Font, line, new(x, y), textColor);
+
+                    y += Font.LineSpacing - 4;
+                }
+
+            }
+            if (Image is not null)
+            {
+                Vec2 size = (Vec2)(ImageFrame?.Size ?? Image.Bounds.Size);
+                Vec2 pos = ImageAlign * (ScreenRect.Size - Padding.AllPadding - size) + Padding.TopLeft + ScreenRect.Position;
+
+                spriteBatch.Draw(Image, pos, ImageFrame, Color.White);
             }
         }
     }

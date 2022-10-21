@@ -75,5 +75,8 @@ namespace ShaderPreview.Structures
 
         public static implicit operator Vector2(Vec2 vec) => new(vec.X, vec.Y);
         public static explicit operator Vec2(Vector2 vec) => new(vec.X, vec.Y);
+
+        public static implicit operator Point(Vec2 vec) => new((int)vec.X, (int)vec.Y);
+        public static explicit operator Vec2(Point p) => new(p.X, p.Y);
     }
 }

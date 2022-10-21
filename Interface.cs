@@ -49,6 +49,8 @@ namespace ShaderPreview
             Text = "This input has no config"
         };
 
+        static bool Initialized = false;
+
         public static void Init()
         {
             Root = new UIRoot(ShaderPreview.Instance)
@@ -130,11 +132,23 @@ namespace ShaderPreview
                                 }
                             }.Assign(out InputContainer),
                         }
-                    }.Assign(out SidePanel)
+                    }.Assign(out SidePanel),
+
+#if DEBUG
+                    new AnimationSlider(2)
+                    { 
+                        Top = new(0, 1, -1),
+                        Width = 200,
+                        Height = 0,
+                        Margin = 5
+                    }
+#endif
                 }
             };
 
+            Initialized = true;
             ShaderChanged();
+            
         }
 
         public static void Update()
@@ -174,6 +188,9 @@ namespace ShaderPreview
 
         public static void ShaderChanged()
         {
+            if (!Initialized)
+                return;
+
             ParameterElements.Clear();
             ParametersList.Elements.Clear();
 
@@ -234,6 +251,9 @@ namespace ShaderPreview
                     RadioTag = input,
                     Selected = input == selected,
                     RadioGroup = group,
+
+                    SelectedTextColor = new(.1f, .1f, .1f),
+                    SelectedBackColor = Color.White,
                 };
                 ParameterInputTypes.Elements.Add(btn);
                 anyInputs = true;
@@ -254,6 +274,7 @@ namespace ShaderPreview
                     ParameterInput.CurrentActiveParams[SelectedParameter] = input;
                     ParameterInputDataList.Elements.Add(CurrentInputConfig = input.ConfigInterface ?? ParameterInputNoConfigLabel);
                 }
+                ParameterInputDataList.Recalculate();
                 ParameterInputDataList.Recalculate();
             };
 

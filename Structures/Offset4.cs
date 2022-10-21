@@ -14,6 +14,9 @@ namespace ShaderPreview.Structures
         public float Vertical => Top + Bottom;
         public float All { set => Top = Left = Right = Bottom = value; }
 
+        public Vec2 TopLeft => new(Left, Top);
+        public Vec2 AllPadding => new(Horizontal, Vertical);
+
         public Offset4(float top, float left, float right, float bottom)
         {
             Top = top;

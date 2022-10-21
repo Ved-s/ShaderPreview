@@ -1,6 +1,8 @@
-﻿using ShaderPreview.UI.Elements;
+﻿using Microsoft.Xna.Framework;
+using ShaderPreview.UI.Elements;
 using ShaderPreview.UI.Helpers;
 using System;
+using System.Linq;
 
 namespace ShaderPreview.UI
 {
@@ -21,8 +23,6 @@ namespace ShaderPreview.UI
             Padding = 5;
 
             int y = 0;
-
-            MinHeight = 10 + inputCount * 20 + 20;
 
             ValueArray = new float[inputCount];
             ValueScrolls = new UIScrollBar[inputCount];
@@ -58,6 +58,8 @@ namespace ShaderPreview.UI
                 ValueScrolls[i] = scroll;
                 y += 20;
             }
+
+            RadioButtonGroup group = new();
 
             Elements = new(this)
             {
@@ -144,54 +146,114 @@ namespace ShaderPreview.UI
                         ValueArray[i] = value;
                         ValueScrolls[i].ScrollPosition = value;
                     }
+                }),
+
+                new UIFlow
+                {
+                    Top = y + 25,
+                    Height = 0,
+                    ElementSpacing = 5
+                }.Execute(flow => 
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        flow.Elements.Add(new UIButton
+                        {
+                            Image = Content.AnimationMode,
+                            ImageFrame = new(i * 16, 0, 16, 16),
+                            ImageAlign = new(.5f),
+
+                            SelectedBackColor = Color.White,
+
+                            Width = 20,
+                            Height = 20,
+                            Selected = i == 0,
+                            RadioGroup = group,
+                            RadioTag = i,
+                            CanDeselect = false,
+                            
+                        });
+                    }
+                    flow.Elements.Add(new UIContainer
+                    {
+                        Width = 80,
+                        Height = 20,
+
+                        Elements = 
+                        {
+                            new UILabel 
+                            {
+                                Top = 2,
+                                Width = 40,
+                                Height = 18,
+                                Text = "Speed:",
+                                TextAlign = new(0, .5f),
+                            },
+                            new UINumberInput
+                            {
+                                Width = new(-40, 1),
+                                Left = new(0, 1, -1),
+                                Value = 1
+                            }
+                        }
+                    });
                 })
             };
 
             foreach (UIScrollBar scroll in ValueScrolls)
                 Elements.Add(scroll);
 
-            Values = new (this);
-    }
-
-    public void SetValues(float[] values)
-    {
-        IgnoreScrollEvents = true;
-        int end = Math.Min(values.Length, ValueScrolls.Length);
-        for (int i = 0; i < end; i++)
-        {
-            float value = values[i];
-            ValueScrolls[i].ScrollPosition = value;
-            ValueArray[i] = ApplyStepToValue(value);
+            Values = new(this);
         }
-        IgnoreScrollEvents = false;
-    }
 
-    float ApplyStepToValue(float value)
-    {
-        if (Step <= 0)
+        public override void Recalculate()
+        {
+            //MinHeight = 10 + ValueArray.Length * 20 + 20;
+            base.Recalculate();
+
+            MinHeight = Elements.Select(e => e.ScreenRect.Bottom - ScreenRect.Top - Padding.Top).Max() + Padding.Vertical;
+            base.Recalculate();
+        }
+
+        public void SetValues(float[] values)
+        {
+            IgnoreScrollEvents = true;
+            int end = Math.Min(values.Length, ValueScrolls.Length);
+            for (int i = 0; i < end; i++)
+            {
+                float value = values[i];
+                ValueScrolls[i].ScrollPosition = value;
+                ValueArray[i] = ApplyStepToValue(value);
+            }
+            IgnoreScrollEvents = false;
+        }
+
+        float ApplyStepToValue(float value)
+        {
+            if (Step <= 0)
+                return value;
+
+            float rem = value % Step;
+            value = MathF.Floor(value / Step) * Step;
+            value += MathF.Round(rem / Step) * Step;
             return value;
-
-        float rem = value % Step;
-        value = MathF.Floor(value / Step) * Step;
-        value += MathF.Round(rem / Step) * Step;
-        return value;
-    }
-
-    public record struct ValueChangedArgs(int Index, float Value);
-    public class SliderValues
-    {
-        AnimationSlider Parent;
-
-        public SliderValues(AnimationSlider parent)
-        {
-            Parent = parent;
         }
 
-        public float this[int index]
+        public record struct ValueChangedArgs(int Index, float Value);
+        public class SliderValues
         {
-            get => Parent.ValueArray[index];
-            set => Parent.ValueScrolls[index].ScrollPosition = value;
+            AnimationSlider Parent;
+
+            public SliderValues(AnimationSlider parent)
+            {
+                Parent = parent;
+            }
+
+            public float this[int index]
+            {
+                get => Parent.ValueArray[index];
+                set => Parent.ValueScrolls[index].ScrollPosition = value;
+            }
         }
     }
-}
 }

@@ -34,14 +34,17 @@ namespace ShaderPreview.ParameterInputs
 
         protected override UIElement? GetConfigInterface()
         {
-            UIContainer container = new();
-            float y = 0;
+            UIList container = new UIList
+            {
+                AutoSize = true,
+                ElementSpacing = 5,
+                Height = 0
+            };
 
             for (int i = 0; i < Values.Length; i++)
             {
                 AnimationSlider slider = new(1)
                 {
-                    Top = y,
                     Height = 0,
                     BorderColor = new(100, 100, 100)
                 };
@@ -50,10 +53,11 @@ namespace ShaderPreview.ParameterInputs
                 slider.Values[0] = Values[i];
                 slider.OnEvent(AnimationSlider.ValueChanged, (_, value) => { Values[index] = value.Value; });
 
-                y += slider.MinHeight!.Value.Value + 5;
                 container.Elements.Add(slider);
+
+                slider.Recalculate();
+                slider.Recalculate();
             }
-            container.Height = y - 5;
 
             return container;
         }

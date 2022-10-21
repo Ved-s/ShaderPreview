@@ -28,6 +28,7 @@ namespace ShaderPreview.UI.Elements
         };
 
         public float ElementSpacing = 0f;
+        public bool AutoSize = false;
 
         bool LayoutInProgress = false;
         float OldScroll;
@@ -35,10 +36,10 @@ namespace ShaderPreview.UI.Elements
 
         protected override void PreUpdateChildren()
         {
-            if (Elements.Count == 0 || Elements[0] != ScrollBar)
+            if (!AutoSize && (Elements.Count == 0 || Elements[0] != ScrollBar))
                 Elements.Insert(0, ScrollBar);
 
-            if (OldScroll != ScrollBar.ScrollPosition)
+            if (!AutoSize && OldScroll != ScrollBar.ScrollPosition)
                 Recalculate();
         }
 
@@ -46,22 +47,29 @@ namespace ShaderPreview.UI.Elements
         {
             PreDrawChildren(spriteBatch);
 
-            if (ScrollBar.Visible)
+            if (!AutoSize && ScrollBar.Visible)
                 ScrollBar.Draw(spriteBatch);
 
             Rect rect = ScreenRect;
+
             rect.X += Padding.Left;
             rect.Y += Padding.Top;
             rect.Width -= Padding.Horizontal;
             rect.Height -= Padding.Vertical;
 
-            if (ScrollBar.Visible)
+            if (!AutoSize && ScrollBar.Visible)
                 rect.Width -= ScrollBar.ScreenRect.Width;
+
+            if (AutoSize)
+            {
+                rect.Y--;
+                rect.Height++;
+            }
 
             spriteBatch.PushAndChangeState(rasterizerState: Scissors);
 
             Rectangle oldScissors = spriteBatch.GraphicsDevice.ScissorRectangle;
-            spriteBatch.GraphicsDevice.ScissorRectangle = (Rectangle)rect;
+            spriteBatch.GraphicsDevice.ScissorRectangle = (Rectangle)(rect.Intersect(oldScissors));
 
             foreach (UIElement element in Elements)
                 if (element != ScrollBar && element.Visible)
@@ -75,24 +83,34 @@ namespace ShaderPreview.UI.Elements
 
         public override void Recalculate()
         {
-            if (Elements.Count == 0 || Elements[0] != ScrollBar)
+            if (!AutoSize && (Elements.Count == 0 || Elements[0] != ScrollBar))
                 Elements.Insert(0, ScrollBar);
+
+            MinHeight = 0;
 
             LayoutInProgress = true;
             SkipRecalculatingChildren = true;
             base.Recalculate();
-            ScrollBar.Recalculate();
+            if (!AutoSize)
+                ScrollBar.Recalculate();
 
-            float contentHeight = Elements.Where(e => e != ScrollBar).Select(e => e.ScreenRect.Height).Sum() + ElementSpacing * Math.Max(0, Elements.Count - 2);
-            ScrollBar.ScrollMax = Math.Max(0, contentHeight - ScreenRect.Height - Padding.Vertical);
-            ScrollBar.ScrollPosition = Math.Min(ScrollBar.ScrollPosition, ScrollBar.ScrollMax);
-            ScrollBar.BarSize = ScreenRect.Height - Padding.Vertical;
-
-            if (ScrollBar.Visible != ScrollBar.ScrollMax > 0)
+            float contentHeight = Elements.Where(e => e != ScrollBar).Select(e => e.ScreenRect.Height).Sum() + ElementSpacing * Math.Max(0, Elements.Count - (ScrollBar.Parent is null ? 1 : 2));
+            if (AutoSize)
             {
-                ScrollBar.Visible = ScrollBar.ScrollMax > 0;
-                Recalculate();
-                return;
+                MinHeight = contentHeight;
+            }
+            else
+            {
+                ScrollBar.ScrollMax = Math.Max(0, contentHeight - ScreenRect.Height - Padding.Vertical);
+                ScrollBar.ScrollPosition = Math.Min(ScrollBar.ScrollPosition, ScrollBar.ScrollMax);
+                ScrollBar.BarSize = ScreenRect.Height - Padding.Vertical;
+
+                if (!AutoSize && ScrollBar.Visible != ScrollBar.ScrollMax > 0)
+                {
+                    ScrollBar.Visible = ScrollBar.ScrollMax > 0;
+                    Recalculate();
+                    return;
+                }
             }
 
             PerformLayout();
@@ -114,7 +132,7 @@ namespace ShaderPreview.UI.Elements
             {
                 screenRect.Top = CurrentLayoutElementY;
                 screenRect.Left = ScreenRect.X + Padding.Left;
-                screenRect.Width = ScreenRect.Width - Padding.Horizontal - (ScrollBar.Visible ? ScrollBar.ScreenRect.Width : 0);
+                screenRect.Width = ScreenRect.Width - Padding.Horizontal - ((!AutoSize && ScrollBar.Visible) ? ScrollBar.ScreenRect.Width : 0);
             }
         }
 

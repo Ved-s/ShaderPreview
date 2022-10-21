@@ -10,9 +10,10 @@ namespace ShaderPreview.UI.Elements
 {
     public class UIFlow : UIContainer, ILayoutContainer
     {
-        bool PerformingLayout;
-
         public float ElementSpacing = 0f;
+
+        bool PerformingLayout;
+        Vec2 CurrentLayoutElementPos;
 
         public override void Recalculate()
         {
@@ -65,10 +66,13 @@ namespace ShaderPreview.UI.Elements
         {
             if (!PerformingLayout)
                 PerformLayout();
+            else 
+                screenRect.Position = CurrentLayoutElementPos;
         }
 
         void PerformLayout()
         {
+            PerformingLayout = true;
             Vec2 pos = ScreenRect.Position;
             float lineMaxHeight = 0;
 
@@ -78,7 +82,8 @@ namespace ShaderPreview.UI.Elements
                 {
                     if (pos.X == 0)
                     {
-                        element.ScreenRect.Position = pos;
+                        CurrentLayoutElementPos = pos;
+                        element.Recalculate();
                         lineMaxHeight = element.ScreenRect.Height;
                         continue;
                     }
@@ -87,7 +92,8 @@ namespace ShaderPreview.UI.Elements
                     pos.Y += lineMaxHeight + ElementSpacing;
                     lineMaxHeight = 0;
                 }
-                element.ScreenRect.Position = pos;
+                CurrentLayoutElementPos = pos;
+                element.Recalculate();
                 lineMaxHeight = Math.Max(lineMaxHeight, element.ScreenRect.Height);
                 pos.X += element.ScreenRect.Width + ElementSpacing;
             }

@@ -41,7 +41,6 @@ namespace ShaderPreview
 
         protected override void Initialize()
         {
-            Interface.Init();
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += (s, e) =>
             {
@@ -58,8 +57,10 @@ namespace ShaderPreview
             Pixel = new(GraphicsDevice, 1, 1);
             Pixel.SetData(new Color[] { Color.White });
             Consolas10 = Content.Load<SpriteFont>("Consolas10");
-            Interface.Root.Font = Consolas10;
+            
             UI.Helpers.Content.Load(Content);
+            Interface.Init();
+            Interface.Root.Font = Consolas10;
         }
 
         protected override void Update(GameTime gameTime)
@@ -80,6 +81,7 @@ namespace ShaderPreview
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
+            GraphicsDevice.ScissorRectangle = new(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             SpriteBatch.Begin(SpriteSortMode.Immediate);
 
