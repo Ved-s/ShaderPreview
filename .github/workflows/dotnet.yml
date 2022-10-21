@@ -16,9 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Build android project
+    - name: Build
       uses: igotinfected-ci/build-monogame@v2
       with:
+        dotnet-version: "6.0.x"
         solution-path: '${{ github.workspace }}\ShaderPreview.sln'
         content-mgcb-path: '${{ github.workspace }}\Content'
         content-mgcb-platform: "Windows"
