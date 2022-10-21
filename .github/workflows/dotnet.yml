@@ -20,7 +20,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Install MGCB
-      run: dotnet tool install -g dotnet-mgcb
+      run: dotnet tool install dotnet-mgcb
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
