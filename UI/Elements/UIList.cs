@@ -98,6 +98,7 @@ namespace ShaderPreview.UI.Elements
             if (AutoSize)
             {
                 MinHeight = contentHeight;
+                base.Recalculate();
             }
             else
             {
