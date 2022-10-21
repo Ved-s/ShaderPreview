@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <RollForward>Major</RollForward>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <TieredCompilation>false</TieredCompilation>
+    <UseWindowsForms>true</UseWindowsForms>
+	<MonoGamePlatform>DesktopGL</MonoGamePlatform>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.1.303" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mgfxc">
+      <HintPath>mgfxc.dll</HintPath>
+      <Aliases>mgfxc</Aliases>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+
+  </ItemGroup>
+  <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
+    <Message Text="Restoring dotnet tools" Importance="High" />
+    <Exec Command="dotnet tool restore" />
+  </Target>
+
+  <ItemGroup>
+	<CopyLibraries Include="Libraries/*.dll" />
+  </ItemGroup>
+	
+  <Target Name="CopyLibraries" AfterTargets="AfterBuild">
+  	<Copy SourceFiles="@(CopyLibraries)" DestinationFolder="$(OutDir)"/>
+  </Target>
+</Project>
