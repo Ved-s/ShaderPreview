@@ -22,7 +22,7 @@ jobs:
         dotnet-version: "6.0.x"
         solution-path: '${{ github.workspace }}\ShaderPreview.sln'
         content-mgcb-path: '${{ github.workspace }}\Content'
-        content-mgcb-platform: "Windows"
+        content-mgcb-platform: "DesktopGL"
         csproj-path: '${{ github.workspace }}\ShaderPreview.csproj'
         build-target: "Build"
         build-configuration: "Release"
