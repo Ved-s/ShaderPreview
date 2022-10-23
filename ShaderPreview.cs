@@ -91,7 +91,7 @@ namespace ShaderPreview
             {
                 ShaderCompiler.Shader.CurrentTechnique.Passes[0].Apply();
             }
-
+            
             SpriteBatch.Draw(Pixel, TextureScreenRect, Color.White);
 
             SpriteBatch.End();
