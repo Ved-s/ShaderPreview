@@ -14,12 +14,12 @@ namespace ShaderPreview.ParameterInputs
         public override bool AppliesToParameter(EffectParameter parameter)
         {
             return parameter.ParameterType >= EffectParameterType.Texture && parameter.ParameterType <= EffectParameterType.Texture2D
-                && parameter.ParameterClass == EffectParameterClass.Object; // shrug
+                && parameter.ParameterClass == EffectParameterClass.Object;
         }
 
         public override void UpdateSelf(EffectParameter parameter, bool selected)
         {
-            ShaderPreview.Instance.GraphicsDevice.Textures[1] = Texture ?? ShaderPreview.Pixel;
+            parameter.SetValue(Texture ?? ShaderPreview.Pixel);
         }
 
 		protected override UIElement? GetConfigInterface()

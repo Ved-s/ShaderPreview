@@ -305,7 +305,7 @@ namespace ShaderPreview
                                 break;
 
                             case EffectParameterClass.Object:
-                                data = "object";
+                                data = param.GetRawData()?.ToString() ?? "null";
                                 break;
 
                             default:
@@ -387,7 +387,7 @@ namespace ShaderPreview
                         return $"{GetParamType(param.ParameterType)}{param.ColumnCount}x{param.RowCount}";
 
                     case EffectParameterClass.Object:
-                        return "object";
+                        return GetParamType(param.ParameterType);
 
                     case EffectParameterClass.Struct:
                         return "struct";

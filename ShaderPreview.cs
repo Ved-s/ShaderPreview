@@ -75,6 +75,7 @@ namespace ShaderPreview
 
             Interface.Update();
             ParameterInput.Update();
+
             base.Update(gameTime);
         }
 
