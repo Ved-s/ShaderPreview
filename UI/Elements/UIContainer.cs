@@ -1,7 +1,10 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using ShaderPreview.Structures;
+using ShaderPreview.UI.Helpers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShaderPreview.UI.Elements
 {
@@ -92,7 +95,10 @@ namespace ShaderPreview.UI.Elements
 
         public class ElementCollection : IList<UIElement>
         {
+            private static readonly DummyController DummyControllerInstance = new();
+
             private readonly UIContainer Parent;
+            private readonly IElementListController Controller = DummyControllerInstance;
             private List<UIElement> Elements = new();
 
             public UIElement this[int index]
@@ -100,6 +106,15 @@ namespace ShaderPreview.UI.Elements
                 get => Elements[index];
                 set
                 {
+                    if (!Controller.CanModifyElements())
+                        ThrowReadonlyException();
+
+                    if (index < 0 || index >= Elements.Count)
+                        throw new ArgumentOutOfRangeException(nameof(index));
+
+                    if (!Controller.CanSetElement(value, Elements[index], index))
+                        ThrowBlockedException();
+
                     ResetParent(Elements[index]);
                     Elements[index] = value;
                     SetParent(value);
@@ -108,25 +123,46 @@ namespace ShaderPreview.UI.Elements
 
             public int Count => Elements.Count;
 
-            public bool IsReadOnly => false;
+            public bool IsReadOnly => !Controller.CanModifyElements();
 
             public ElementCollection(UIContainer parent)
             {
                 Parent = parent;
+                if (parent is IElementListController controller)
+                    Controller = controller;
             }
 
             public void Add(UIElement item)
             {
+                if (!Controller.CanModifyElements())
+                    ThrowReadonlyException();
+
+                if (!Controller.CanAddElement(item))
+                    ThrowBlockedException();
+
                 Elements.Add(item);
                 SetParent(item);
             }
 
             public void Clear()
             {
-                foreach (UIElement element in Elements)
-                    ResetParent(element);
+                if (!Controller.CanModifyElements())
+                    ThrowReadonlyException();
 
-                Elements.Clear();
+                int index = 0;
+                while (index < Elements.Count)
+                {
+                    UIElement element = Elements[index];
+
+                    if (!Controller.CanRemoveElement(element))
+                    {
+                        index++;
+                        continue;
+                    }
+
+                    ResetParent(element);
+                    Elements.RemoveAt(index);
+                }
             }
 
             public bool Contains(UIElement item)
@@ -151,18 +187,36 @@ namespace ShaderPreview.UI.Elements
 
             public void Insert(int index, UIElement item)
             {
+                if (!Controller.CanModifyElements())
+                    ThrowReadonlyException();
+
+                if (!Controller.CanInsertElement(item, index))
+                    ThrowBlockedException();
+
                 Elements.Insert(index, item);
                 SetParent(item);
             }
 
             public bool Remove(UIElement item)
             {
+                if (!Controller.CanModifyElements())
+                    ThrowReadonlyException();
+
+                if (!Controller.CanRemoveElement(item))
+                    ThrowBlockedException();
+
                 ResetParent(item);
                 return Elements.Remove(item);
             }
 
             public void RemoveAt(int index)
             {
+                if (!Controller.CanModifyElements())
+                    ThrowReadonlyException();
+
+                if (!Controller.CanRemoveElement(Elements[index]))
+                    ThrowBlockedException();
+
                 ResetParent(Elements[index]);
                 Elements.RemoveAt(index);
             }
@@ -185,6 +239,14 @@ namespace ShaderPreview.UI.Elements
                 element.Parent = null;
                 element.Root = null!;
             }
+
+            [DoesNotReturn]
+            static void ThrowBlockedException() => throw new InvalidOperationException("Action blocked by the parent element");
+
+            [DoesNotReturn]
+            static void ThrowReadonlyException() => throw new InvalidOperationException("Element collection is read-only");
+
+            class DummyController : IElementListController { }
         }
     }
 }

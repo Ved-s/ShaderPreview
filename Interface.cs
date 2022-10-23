@@ -20,7 +20,7 @@ namespace ShaderPreview
 
         public static UIResizeablePanel SidePanel = null!;
         public static UIList ParametersList = null!;
-        public static UIFlow ParameterInputTypes = null!;
+        public static TabSelector ParameterInputTypes = null!;
 
         public static List<UIShaderParameter> ParameterElements = new();
         public static string? SelectedParameter;
@@ -122,27 +122,16 @@ namespace ShaderPreview
 
                                         Elements =
                                         {
-                                            new UIFlow()
+                                            new TabSelector
                                             {
-                                                Height = 0,
-                                                ElementSpacing = 2
                                             }.Assign(out ParameterInputTypes)
+                                            .OnEvent(TabSelector.TabSelectedEvent, (_, tab) => ParameterInputSelected(tab.Tag))
                                         }
                                     }.Assign(out ParameterInputDataList)
                                 }
                             }.Assign(out InputContainer),
                         }
                     }.Assign(out SidePanel),
-
-#if DEBUG
-                    new AnimationSlider(2)
-                    { 
-                        Top = new(0, 1, -1),
-                        Width = 200,
-                        Height = 0,
-                        Margin = 5
-                    }
-#endif
                 }
             };
 
@@ -194,7 +183,7 @@ namespace ShaderPreview
             ParameterElements.Clear();
             ParametersList.Elements.Clear();
 
-            ParameterInputTypes.Elements.Clear();
+            ParameterInputTypes.Tabs.Clear();
 
             if (SelectedParameter is not null && !ParameterInput.CurrentShaderParams.ContainsKey(SelectedParameter))
                 SelectedParameter = null;
@@ -218,7 +207,7 @@ namespace ShaderPreview
 
         public static void ParameterChanged()
         {
-            ParameterInputTypes.Elements.Clear();
+            ParameterInputTypes.Tabs.Clear();
 
             if (CurrentInputConfig is not null)
                 ParameterInputDataList.Elements.Remove(CurrentInputConfig);
@@ -238,45 +227,13 @@ namespace ShaderPreview
             if (!ParameterInput.CurrentActiveParams.TryGetValue(SelectedParameter, out selected))
                 selected = null;
 
-            RadioButtonGroup group = new();
             bool anyInputs = false;
 
             foreach (ParameterInput input in ParameterInput.CurrentShaderParams[SelectedParameter])
             {
-                UIButton btn = new()
-                {
-                    Width = 0,
-                    Height = 0,
-                    Text = input.DisplayName,
-                    RadioTag = input,
-                    Selected = input == selected,
-                    RadioGroup = group,
-
-                    SelectedTextColor = new(.1f, .1f, .1f),
-                    SelectedBackColor = Color.White,
-                };
-                ParameterInputTypes.Elements.Add(btn);
+                ParameterInputTypes.Tabs.Add(new(input.DisplayName, input == selected, input));
                 anyInputs = true;
             }
-
-            group.ButtonClicked += (btn, id) =>
-            {
-                if (CurrentInputConfig is not null)
-                    ParameterInputDataList.Elements.Remove(CurrentInputConfig);
-
-                if (id is not ParameterInput input)
-                {
-                    ParameterInput.CurrentActiveParams.Remove(SelectedParameter);
-                    ParameterInputDataList.Elements.Add(CurrentInputConfig = SelectParameterInputLabel);
-                }
-                else
-                {
-                    ParameterInput.CurrentActiveParams[SelectedParameter] = input;
-                    ParameterInputDataList.Elements.Add(CurrentInputConfig = input.ConfigInterface ?? ParameterInputNoConfigLabel);
-                }
-                ParameterInputDataList.Recalculate();
-                ParameterInputDataList.Recalculate();
-            };
 
             if (ParameterInput.CurrentActiveParams.TryGetValue(SelectedParameter, out ParameterInput? active))
                 ParameterInputDataList.Elements.Add(CurrentInputConfig = active.ConfigInterface ?? ParameterInputNoConfigLabel);
@@ -285,6 +242,25 @@ namespace ShaderPreview
 
             SidePanel.Recalculate();
             SidePanel.Recalculate();
+        }
+
+        public static void ParameterInputSelected(object? id)
+        {
+            if (CurrentInputConfig is not null)
+                ParameterInputDataList.Elements.Remove(CurrentInputConfig);
+
+            if (id is not ParameterInput input)
+            {
+                ParameterInput.CurrentActiveParams.Remove(SelectedParameter!);
+                ParameterInputDataList.Elements.Add(CurrentInputConfig = SelectParameterInputLabel);
+            }
+            else
+            {
+                ParameterInput.CurrentActiveParams[SelectedParameter!] = input;
+                ParameterInputDataList.Elements.Add(CurrentInputConfig = input.ConfigInterface ?? ParameterInputNoConfigLabel);
+            }
+            ParameterInputDataList.Recalculate();
+            ParameterInputDataList.Recalculate();
         }
 
         public class UIShaderParameter : UIElement
