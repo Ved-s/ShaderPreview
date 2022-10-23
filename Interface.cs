@@ -150,18 +150,7 @@ namespace ShaderPreview
             }
             if (Root.CtrlKey >= KeybindState.JustPressed && Root.GetKeyState(Keys.O) == KeybindState.JustPressed)
             {
-                Thread thread = new(() =>
-                {
-                    System.Windows.Forms.OpenFileDialog ofd = new();
-                    ofd.Title = "Select shader file";
-
-                    if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                    {
-                        ShaderCompiler.SetShaderFilePath(ofd.FileName);
-                    }
-                });
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
+                Util.SelectFile("Select shader file", ShaderCompiler.SetShaderFilePath, "*.fx|*.*");
             }
         }
 
