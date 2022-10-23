@@ -2,12 +2,32 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ShaderPreview
 {
     public static class Util
     {
+        public static void SelectFile(string whatToSay, Action<string> whatHappensOnSuccess, string? filter = null)
+        {
+            Thread thread = new(() =>
+            {
+				System.Windows.Forms.OpenFileDialog ofd = new()
+				{
+					Title = whatToSay,
+					Filter = filter
+				};
+
+				if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    whatHappensOnSuccess(ofd.FileName);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+
         public static IEnumerable<T> Enumerate<T>(T arg0)
         {
             yield return arg0;
