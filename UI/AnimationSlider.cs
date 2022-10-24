@@ -208,7 +208,6 @@ namespace ShaderPreview.UI
 
         public override void Recalculate()
         {
-            //MinHeight = 10 + ValueArray.Length * 20 + 20;
             base.Recalculate();
 
             MinHeight = Elements.Select(e => e.ScreenRect.Bottom - ScreenRect.Top - Padding.Top).Max() + Padding.Vertical;

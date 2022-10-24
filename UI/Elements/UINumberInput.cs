@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using ShaderPreview.Structures;
 using ShaderPreview.UI.Helpers;
 using System;
 using System.Globalization;
@@ -9,7 +10,7 @@ namespace ShaderPreview.UI.Elements
     internal class UINumberInput : UIInput
     {
         public delegate bool ValueValidatorDelegate(ref double value);
-        public static readonly ElementEvent<object?, UINumberInput> ValueChanged = new();
+        public static readonly ElementEvent<Empty, UINumberInput> ValueChanged = new();
 
         public override bool Multiline => false;
 
@@ -67,7 +68,7 @@ namespace ShaderPreview.UI.Elements
 
         protected override void TextInput(object? sender, TextInputEventArgs e)
         {
-            if (!Events.PreCall(ValueChanged, null))
+            if (!Events.PreCall(ValueChanged, default))
                 return;
 
             if (e.Character == '-' && AllowNegative)
@@ -82,7 +83,7 @@ namespace ShaderPreview.UI.Elements
                     Lines[0].Insert(0, '-');
                     CaretPos.X++;
                 }
-                Events.PostCall(ValueChanged, null);
+                Events.PostCall(ValueChanged, default);
             }
             if (CaretPos.X == 0 && HasChar('-', out _))
                 return;
@@ -103,7 +104,7 @@ namespace ShaderPreview.UI.Elements
 
         protected override bool PreTextChanged()
         {
-            if (!Events.PreCall(ValueChanged, null))
+            if (!Events.PreCall(ValueChanged, default))
                 return false;
 
             return base.PreTextChanged();
@@ -112,7 +113,7 @@ namespace ShaderPreview.UI.Elements
         {
             base.PostTextChanged();
 
-            Events.PostCall(ValueChanged, null);
+            Events.PostCall(ValueChanged, default);
         }
 
         protected override void ActiveChanged()

@@ -13,7 +13,7 @@ namespace ShaderPreview.UI.Elements
 {
     public class UIInput : UIElement
     {
-        public static readonly ElementEvent<object?, UIInput> TextChangedEvent = new();
+        public static readonly ElementEvent<Empty, UIInput> TextChangedEvent = new();
         public static readonly ElementEvent<TextInputEventArgs, UIInput> CharacterTypedEvent = new();
 
         public Offset4 Padding = new(3, 3);
@@ -496,8 +496,8 @@ namespace ShaderPreview.UI.Elements
             SelectionStartPos = SelectionEndPos = Point.Zero;
         }
 
-        protected virtual bool PreTextChanged() => Events.PreCall(TextChangedEvent, null);
-        protected virtual void PostTextChanged() => Events.PostCall(TextChangedEvent, null);
+        protected virtual bool PreTextChanged() => Events.PreCall(TextChangedEvent, default);
+        protected virtual void PostTextChanged() => Events.PostCall(TextChangedEvent, default);
 
         float GetPartialStringWidth(StringBuilder builder, int start, int length)
         {

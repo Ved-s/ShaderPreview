@@ -4,6 +4,7 @@ using ShaderPreview.UI.Helpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace ShaderPreview.UI.Elements
@@ -139,6 +140,9 @@ namespace ShaderPreview.UI.Elements
 
                 if (!Controller.CanAddElement(item))
                     ThrowBlockedException();
+
+                if (Contains(item))
+                    return;
 
                 Elements.Add(item);
                 SetParent(item);

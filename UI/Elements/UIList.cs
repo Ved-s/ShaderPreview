@@ -24,7 +24,6 @@ namespace ShaderPreview.UI.Elements
 
             BackColor = Color.White * 0.1f,
             ScrollDistance = 20
-
         };
 
         public float ElementSpacing = 0f;
@@ -89,7 +88,6 @@ namespace ShaderPreview.UI.Elements
             MinHeight = 0;
 
             LayoutInProgress = true;
-            SkipRecalculatingChildren = true;
             base.Recalculate();
             if (!AutoSize)
                 ScrollBar.Recalculate();
@@ -143,7 +141,7 @@ namespace ShaderPreview.UI.Elements
 
             foreach (UIElement element in Elements)
             {
-                if (element == ScrollBar)
+                if (element == ScrollBar || !element.Visible)
                     continue;
 
                 CurrentLayoutElementY = startPos;

@@ -1,6 +1,7 @@
 ﻿using ShaderPreview.UI.Elements;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ShaderPreview.UI.Helpers
 {
@@ -111,6 +112,31 @@ namespace ShaderPreview.UI.Helpers
 
             delegates.Add(callback);
             AnyPostCallbacks = true;
+        }
+
+        public void RemovePreCallback<TEvent, TElement>(ElementEvent<TEvent, TElement> @event, Func<TElement, TEvent, bool> callback)
+        {
+            if (Parent is not TElement)
+                throw new ArgumentException("Provided event does not match this element", nameof(@event));
+
+            List<Delegate>? delegates = PreCallbacks[@event.ElementLevel][@event.EventId];
+            if (delegates is null)
+                return;
+
+            delegates.Remove(callback);
+            AnyPreCallbacks = PreCallbacks.SelectMany(x => x).Any(l => l is not null && l.Count > 0);
+        }
+        public void RemovePostCallback<TEvent, TElement>(ElementEvent<TEvent, TElement> @event, Action<TElement, TEvent> callback)
+        {
+            if (Parent is not TElement)
+                throw new ArgumentException("Provided event does not match this element", nameof(@event));
+
+            List<Delegate>? delegates = PostCallbacks[@event.ElementLevel][@event.EventId];
+            if (delegates is null)
+                return;
+
+            delegates.Remove(callback);
+            AnyPostCallbacks = PostCallbacks.SelectMany(x => x).Any(l => l is not null && l.Count > 0); ;
         }
     }
 }

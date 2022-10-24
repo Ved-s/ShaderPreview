@@ -27,12 +27,12 @@ namespace ShaderPreview.ParameterInputs
             UIButton button = new()
             {
                 Height = 20,
-                Text = "Click me! ... or don't.",
+                Text = "Select texture",
                 BorderColor = new(100, 100, 100)
             };
 			button.OnEvent(UIElement.ClickEvent, (_, value) =>
 			{
-                Util.SelectFile("Select texture (png file)", (ShaderPatch) =>
+                Util.SelectFile("Select texture", (ShaderPatch) =>
                 {
                     try
                     {
@@ -42,7 +42,7 @@ namespace ShaderPreview.ParameterInputs
 					{
                         System.Windows.Forms.MessageBox.Show("Error happened!");
 					}
-                }, "*.png|*.*");
+                }, "Image (PNG, JPEG, GIF, PSD, BMP, HDR, TGA)|*.png;*.bmp;*.jpeg;*.jpg;*.gif;*.psd;*.hdr;*.tga|All files|*.*");
 			});
 			return button;
 		}

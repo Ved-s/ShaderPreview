@@ -9,6 +9,8 @@ namespace ShaderPreview.UI.Helpers
         public delegate void ButtonClickedDelegate(UIButton? button, object? buttonRadioTag);
         public ButtonClickedDelegate? ButtonClicked;
 
+        public bool TriggerOnButtonAdd = false;
+
         internal List<UIButton> Buttons = new();
 
         internal bool AnySelectedButtons => Buttons.Count > 0 && Buttons.Any(b => b.Selected);
@@ -28,14 +30,14 @@ namespace ShaderPreview.UI.Helpers
         internal void AddButton(UIButton button)
         {
             Buttons.Add(button);
-            if (button.Selected && !AnySelectedButtons)
+            if (button.Selected && !AnySelectedButtons && TriggerOnButtonAdd)
                 ButtonClicked?.Invoke(button, button.RadioTag);
         }
 
         internal void RemoveButton(UIButton button)
         {
             Buttons.Remove(button);
-            if (button.Selected && !AnySelectedButtons)
+            if (button.Selected && !AnySelectedButtons && TriggerOnButtonAdd)
                 ButtonClicked?.Invoke(null, null);
         }
     }

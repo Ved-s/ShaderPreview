@@ -65,6 +65,8 @@ namespace ShaderPreview
 
         protected override void Update(GameTime gameTime)
         {
+            ShaderCompiler.EndCompiling();
+
             GameTime = gameTime;
             Viewport vp = GraphicsDevice.Viewport;
             Vec2 screenSize = new(vp.Width, vp.Height);

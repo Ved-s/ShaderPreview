@@ -9,19 +9,19 @@ namespace ShaderPreview
 {
     public static class Util
     {
-        public static void SelectFile(string whatToSay, Action<string> whatHappensOnSuccess, string? filter = null)
+        public static void SelectFile(string title, Action<string> fileSelected, string? filter = null)
         {
             Thread thread = new(() =>
             {
 				System.Windows.Forms.OpenFileDialog ofd = new()
 				{
-					Title = whatToSay,
+					Title = title,
 					Filter = filter
 				};
 
 				if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    whatHappensOnSuccess(ofd.FileName);
+                    fileSelected(ofd.FileName);
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);

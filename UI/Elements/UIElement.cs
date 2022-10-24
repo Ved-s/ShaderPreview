@@ -8,12 +8,13 @@ namespace ShaderPreview.UI.Elements
 {
     public abstract class UIElement
     {
-        public static readonly ElementEvent<object?, UIElement> UpdateEvent = new();
+        public static readonly ElementEvent<Empty, UIElement> UpdateEvent = new();
         public static readonly ElementEvent<SpriteBatch, UIElement> DrawEvent = new();
-        public static readonly ElementEvent<object?, UIElement> ClickEvent = new();
+        public static readonly ElementEvent<Empty, UIElement> ClickEvent = new();
 
         public static readonly ElementEvent<bool, UIElement> HoveredChangedEvent = new();
         public static readonly ElementEvent<bool, UIElement> ActiveChangedEvent = new();
+        public static readonly ElementEvent<Empty, UIElement> RecalculateEvent = new();
 
         public string? Name;
 
@@ -107,15 +108,15 @@ namespace ShaderPreview.UI.Elements
             if (Root is null)
                 return;
 
-            if (!Events.PreCall(UpdateEvent, null))
+            if (!Events.PreCall(UpdateEvent, default))
                 return;
 
             UpdateSelf();
 
             if (Hovered && Root.MouseLeftKey == KeybindState.JustPressed)
-                Events.PostCall(ClickEvent, null);
+                Events.PostCall(ClickEvent, default);
 
-            Events.PostCall(UpdateEvent, null);
+            Events.PostCall(UpdateEvent, default);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -132,6 +133,9 @@ namespace ShaderPreview.UI.Elements
 
         public virtual void Recalculate()
         {
+            if (!Events.PreCall(RecalculateEvent, default))
+                return;
+
             float? parentWidth = Parent?.ScreenRect.Width - Margin.Horizontal - Parent?.Padding.Horizontal;
             float? parentHeight = Parent?.ScreenRect.Height - Margin.Vertical - Parent?.Padding.Vertical;
 
@@ -143,6 +147,8 @@ namespace ShaderPreview.UI.Elements
 
             if (Parent is ILayoutContainer layout)
                 layout.LayoutChild(this, ref ScreenRect);
+
+            Events.PostCall(RecalculateEvent, default);
         }
 
         protected virtual void HoveredChanged() { }
@@ -167,5 +173,10 @@ namespace ShaderPreview.UI.Elements
             => Events.AddPreCallback(@event, callback);
         public void AddPostEventCallback<TEvent, TElement>(ElementEvent<TEvent, TElement> @event, Action<TElement, TEvent> callback)
             => Events.AddPostCallback(@event, callback);
+
+        public void RemovePreEventCallback<TEvent, TElement>(ElementEvent<TEvent, TElement> @event, Func<TElement, TEvent, bool> callback)
+            => Events.RemovePreCallback(@event, callback);
+        public void RemovePostEventCallback<TEvent, TElement>(ElementEvent<TEvent, TElement> @event, Action<TElement, TEvent> callback)
+            => Events.RemovePostCallback(@event, callback);
     }
 }

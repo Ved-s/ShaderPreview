@@ -44,7 +44,13 @@ namespace ShaderPreview.UI.Elements
         public bool Selected
         {
             get => SelectedInternal;
-            set { SelectedInternal = value; RadioGroup?.SelectButton(value ? this : null); }
+            set
+            {
+                if (SelectedInternal == value)
+                    return;
+                SelectedInternal = value;
+                RadioGroup?.SelectButton(value ? this : null);
+            }
         }
         public RadioButtonGroup? RadioGroup
         {

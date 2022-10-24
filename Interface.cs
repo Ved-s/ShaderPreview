@@ -6,11 +6,10 @@ using ShaderPreview.Structures;
 using ShaderPreview.UI;
 using ShaderPreview.UI.Elements;
 using ShaderPreview.UI.Helpers;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Threading;
 
 namespace ShaderPreview
 {
@@ -30,19 +29,21 @@ namespace ShaderPreview
         public static UIContainer ParamContainer = null!;
         public static UIContainer InputContainer = null!;
 
-        public static UILabel SelectParameterNoInputsLabel = new()
+        public static UILabel ShaderNameLabel = null!;
+
+        public static readonly UILabel SelectParameterNoInputsLabel = new()
         {
             Height = 0,
             Width = 0,
             Text = "Selected parameter has no registered inputs"
         };
-        public static UILabel SelectParameterInputLabel = new()
+        public static readonly UILabel SelectParameterInputLabel = new()
         {
             Height = 0,
             Width = 0,
             Text = "Select parameter input type with buttons above"
         };
-        public static UILabel ParameterInputNoConfigLabel = new() 
+        public static readonly UILabel ParameterInputNoConfigLabel = new()
         {
             Height = 0,
             Width = 0,
@@ -68,7 +69,9 @@ namespace ShaderPreview
                         MinWidth = new(0, .2f),
 
                         Margin = 5,
-                        Padding = 5,
+
+                        BackColor = Color.Transparent,
+                        BorderColor = Color.Transparent,
 
                         CanGrabTop = false,
                         CanGrabRight = false,
@@ -77,59 +80,117 @@ namespace ShaderPreview
 
                         Elements =
                         {
-                            new UIContainer()
+                            new TabContainer
                             {
-                                Height = new(0, 1f),
-
-                                Elements =
+                                Tabs =
                                 {
-                                    new UILabel()
+                                    new()
                                     {
-                                        Text = "Parameters",
-                                        Height = 15,
-                                        TextAlign = new(.5f, 0)
-                                    },
-                                    new UIList()
-                                    {
-                                        Top = 20,
-                                        Height = new(-20, 1),
-                                        Margin = 5,
-                                        ElementSpacing = 2
-                                    }.Assign(out ParametersList)
-                                }
-                            }.Assign(out ParamContainer),
-                            new UIContainer()
-                            {
-                                Top = new(0, .5f),
-                                Height = new(0, .5f),
-                                Visible = false,
-
-                                Elements =
-                                {
-                                    new UILabel()
-                                    {
-                                        Text = "Parameter input",
-                                        Height = 15,
-                                        TextAlign = new(.5f, 0)
-                                    },
-                                    new UIList()
-                                    {
-                                        Top = 15,
-
-                                        Margin = 5,
-                                        Height = new(-15, 1f),
-                                        ElementSpacing = 5f,
-
-                                        Elements =
+                                        Name = "Settings",
+                                        Element = new UIPanel
                                         {
-                                            new TabSelector
+                                            Padding = 5,
+
+                                            Elements =
                                             {
-                                            }.Assign(out ParameterInputTypes)
-                                            .OnEvent(TabSelector.TabSelectedEvent, (_, tab) => ParameterInputSelected(tab.Tag))
+                                                new UIList()
+                                                {
+                                                    Elements =
+                                                    {
+                                                        new UIContainer
+                                                        {
+                                                            Height = 40,
+
+                                                            Elements =
+                                                            {
+                                                                new UIButton
+                                                                {
+                                                                    Text = "Select shader",
+
+                                                                    Width = 0,
+                                                                    Height = 18
+                                                                }.OnEvent(UIElement.ClickEvent, (_, _) => 
+                                                                {
+                                                                    Util.SelectFile("Select shader file", ShaderCompiler.SetShaderFilePath, "HLSL Shader (.fx)|*.fx|All files|*.*");
+                                                                }),
+                                                                new UILabel
+                                                                {
+                                                                    Text = "Selected: " + Path.GetFileName(ShaderCompiler.ShaderPath),
+                                                                    TextColor = new(.8f, .8f, .8f),
+                                                                    Top = 22,
+                                                                    Height = 0,
+                                                                }.Assign(out ShaderNameLabel)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
-                                    }.Assign(out ParameterInputDataList)
+                                    },
+                                    new()
+                                    {
+                                        Name = "Shader parameters",
+                                        Element = new UIPanel
+                                        {
+                                            Padding = 5,
+
+                                            Elements =
+                                            {
+                                                new UIContainer()
+                                                {
+                                                    Height = new(0, 1f),
+
+                                                    Elements =
+                                                    {
+                                                        new UILabel()
+                                                        {
+                                                            Text = "Parameters",
+                                                            Height = 15,
+                                                            TextAlign = new(.5f, 0)
+                                                        },
+                                                        new UIList()
+                                                        {
+                                                            Top = 20,
+                                                            Height = new(-20, 1),
+                                                            ElementSpacing = 2
+                                                        }.Assign(out ParametersList)
+                                                    }
+                                                }.Assign(out ParamContainer),
+                                                new UIContainer()
+                                                {
+                                                    Top = new(0, .5f),
+                                                    Height = new(0, .5f),
+                                                    Visible = false,
+
+                                                    Elements =
+                                                    {
+                                                        new UILabel()
+                                                        {
+                                                            Text = "Parameter input",
+                                                            Height = 15,
+                                                            TextAlign = new(.5f, 0)
+                                                        },
+                                                        new UIList()
+                                                        {
+                                                            Top = 20,
+
+                                                            Height = new(-15, 1f),
+                                                            ElementSpacing = 5f,
+
+                                                            Elements =
+                                                            {
+                                                                new TabSelector()
+                                                                .Assign(out ParameterInputTypes)
+                                                                .OnEvent(TabSelector.TabSelectedEvent, (_, tab) => ParameterInputSelected(tab?.Tag))
+                                                            }
+                                                        }.Assign(out ParameterInputDataList)
+                                                    }
+                                                }.Assign(out InputContainer),
+                                            }
+                                        }
+                                    }
                                 }
-                            }.Assign(out InputContainer),
+                            }
                         }
                     }.Assign(out SidePanel),
                 }
@@ -137,7 +198,6 @@ namespace ShaderPreview
 
             Initialized = true;
             ShaderChanged();
-            
         }
 
         public static void Update()
@@ -147,10 +207,6 @@ namespace ShaderPreview
             {
                 Init();
                 Root.Update();
-            }
-            if (Root.CtrlKey >= KeybindState.JustPressed && Root.GetKeyState(Keys.O) == KeybindState.JustPressed)
-            {
-                Util.SelectFile("Select shader file", ShaderCompiler.SetShaderFilePath, "*.fx|*.*");
             }
         }
 
@@ -174,6 +230,11 @@ namespace ShaderPreview
 
             ParameterInputTypes.Tabs.Clear();
 
+            if (CurrentInputConfig is not null)
+                ParameterInputDataList.Elements.Remove(CurrentInputConfig);
+
+            CurrentInputConfig = null;
+
             if (SelectedParameter is not null && !ParameterInput.CurrentShaderParams.ContainsKey(SelectedParameter))
                 SelectedParameter = null;
 
@@ -185,11 +246,8 @@ namespace ShaderPreview
                     ParameterElements.Add(paramui);
                     ParametersList.Elements.Add(paramui);
                 }
-
-                RadioButtonGroup group = new();
             }
-            if (SelectedParameter is not null)
-                ParameterChanged();
+            ParameterChanged();
 
             Root.Recalculate();
         }
@@ -200,6 +258,8 @@ namespace ShaderPreview
 
             if (CurrentInputConfig is not null)
                 ParameterInputDataList.Elements.Remove(CurrentInputConfig);
+
+            CurrentInputConfig = null;
 
             if (SelectedParameter is null)
             {
@@ -225,11 +285,13 @@ namespace ShaderPreview
             }
 
             if (ParameterInput.CurrentActiveParams.TryGetValue(SelectedParameter, out ParameterInput? active))
-                ParameterInputDataList.Elements.Add(CurrentInputConfig = active.ConfigInterface ?? ParameterInputNoConfigLabel);
+                CurrentInputConfig = active.ConfigInterface ?? ParameterInputNoConfigLabel;
             else
-                ParameterInputDataList.Elements.Add(CurrentInputConfig = anyInputs ? SelectParameterInputLabel : SelectParameterNoInputsLabel);
+                CurrentInputConfig = anyInputs ? SelectParameterInputLabel : SelectParameterNoInputsLabel;
 
-            SidePanel.Recalculate();
+            if (CurrentInputConfig is not null)
+                ParameterInputDataList.Elements.Add(CurrentInputConfig);
+
             SidePanel.Recalculate();
         }
 
@@ -238,18 +300,23 @@ namespace ShaderPreview
             if (CurrentInputConfig is not null)
                 ParameterInputDataList.Elements.Remove(CurrentInputConfig);
 
+            CurrentInputConfig = null;
+
             if (id is not ParameterInput input)
             {
                 ParameterInput.CurrentActiveParams.Remove(SelectedParameter!);
-                ParameterInputDataList.Elements.Add(CurrentInputConfig = SelectParameterInputLabel);
+                CurrentInputConfig = SelectParameterInputLabel;
             }
             else
             {
                 ParameterInput.CurrentActiveParams[SelectedParameter!] = input;
-                ParameterInputDataList.Elements.Add(CurrentInputConfig = input.ConfigInterface ?? ParameterInputNoConfigLabel);
+                CurrentInputConfig = input.ConfigInterface ?? ParameterInputNoConfigLabel;
             }
-            ParameterInputDataList.Recalculate();
-            ParameterInputDataList.Recalculate();
+
+            if (CurrentInputConfig is not null)
+                ParameterInputDataList.Elements.Add(CurrentInputConfig);
+
+            SidePanel.Recalculate();
         }
 
         public class UIShaderParameter : UIElement

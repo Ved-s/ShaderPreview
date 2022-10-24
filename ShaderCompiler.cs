@@ -17,12 +17,15 @@ namespace ShaderPreview
     public static class ShaderCompiler
     {
         const string BasicShader = "sampler texSampler : register(S0);\n\nfloat4 MainPS(float2 pos : TEXCOORD0) : COLOR0\n{\n\treturn tex2D(texSampler, pos);\n}\n\ntechnique Main\n{\n\tpass Main\n\t{\n\t\tPixelShader = compile ps_3_0 MainPS();\n\t}\n}";
-        static string ShaderPath = "";
-
+        
         static FileSystemWatcher? FileWatcher;
 
+        public static string ShaderPath { get; private set; } = "";
         public static Effect? Shader { get; private set; }
         public static string Errors { get; private set; } = "";
+
+        static Effect? CompiledShader;
+        static object Lock = new();
 
         static Type EffectObjectType = typeof(ShaderResult).Assembly.GetType("MonoGame.Effect.EffectObject")!;
 
@@ -38,6 +41,9 @@ namespace ShaderPreview
 
         public static void SetShaderFilePath(string path)
         {
+            if (Interface.ShaderNameLabel is not null)
+                Interface.ShaderNameLabel.Text = "Selected: " + Path.GetFileName(path);
+
             ShaderPath = path;
             if (!File.Exists(ShaderPath))
                 File.WriteAllText(ShaderPath, BasicShader);
@@ -114,16 +120,27 @@ namespace ShaderPreview
                 byte[] code = stream.ToArray();
 
                 stream.Dispose();
-
-                Shader?.Dispose();
-                Shader = new(ShaderPreview.Instance.GraphicsDevice, code);
-
-                ParameterInput.ShaderChanged();
-                Interface.ShaderChanged();
+                lock (Lock)
+                    CompiledShader = new(ShaderPreview.Instance.GraphicsDevice, code);
             }
             catch (Exception e)
             {
                 Errors = $"{e.GetType().Name}: {e.Message}";
+            }
+        }
+
+        internal static void EndCompiling()
+        {
+            lock (Lock)
+            {
+                if (CompiledShader is not null)
+                {
+                    Shader?.Dispose();
+                    Shader = CompiledShader;
+                    CompiledShader = null;
+                    ParameterInput.ShaderChanged();
+                    Interface.ShaderChanged();
+                }
             }
         }
 
