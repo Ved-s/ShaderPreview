@@ -23,9 +23,6 @@
       <Aliases>mgfxc</Aliases>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-
-  </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />
     <Exec Command="dotnet tool restore" />
@@ -36,6 +33,6 @@
   </ItemGroup>
 	
   <Target Name="CopyLibraries" AfterTargets="AfterBuild">
-  	<Copy SourceFiles="@(CopyLibraries)" DestinationFolder="$(OutDir)"/>
+  	<Copy SourceFiles="@(CopyLibraries)" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>

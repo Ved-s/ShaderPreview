@@ -92,13 +92,13 @@ namespace ShaderPreview.ParameterInputs
                 if (param is null)
                     continue;
 
-                kvp.Value.UpdateSelf(param, Interface.SelectedParameter == kvp.Key);
+                kvp.Value.UpdateSelf(param, UI.Pages.ShaderParameters.SelectedParameter == kvp.Key);
             }
         }
         public static void Draw(SpriteBatch spriteBatch)
         {
             foreach (var kvp in CurrentActiveParams)
-                kvp.Value.DrawSelf(spriteBatch, Interface.SelectedParameter == kvp.Key);
+                kvp.Value.DrawSelf(spriteBatch, UI.Pages.ShaderParameters.SelectedParameter == kvp.Key);
 
         }
         public static void Autoload()

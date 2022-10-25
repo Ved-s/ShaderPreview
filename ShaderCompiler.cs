@@ -41,8 +41,8 @@ namespace ShaderPreview
 
         public static void SetShaderFilePath(string path)
         {
-            if (Interface.ShaderNameLabel is not null)
-                Interface.ShaderNameLabel.Text = "Selected: " + Path.GetFileName(path);
+            if (UI.Pages.Settings.ShaderNameLabel is not null)
+                UI.Pages.Settings.ShaderNameLabel.Text = "Selected: " + Path.GetFileName(path);
 
             ShaderPath = path;
             if (!File.Exists(ShaderPath))
@@ -139,7 +139,7 @@ namespace ShaderPreview
                     Shader = CompiledShader;
                     CompiledShader = null;
                     ParameterInput.ShaderChanged();
-                    Interface.ShaderChanged();
+                    UI.Pages.ShaderParameters.ShaderChanged();
                 }
             }
         }
