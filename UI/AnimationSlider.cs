@@ -3,6 +3,7 @@ using ShaderPreview.UI.Elements;
 using ShaderPreview.UI.Helpers;
 using System;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 
 namespace ShaderPreview.UI
 {
@@ -14,9 +15,17 @@ namespace ShaderPreview.UI
         public readonly float[] ValueArray;
 
         UIScrollBar[] ValueScrolls;
+        UIButton[] PlayButtons;
         UINumberInput MinInput, MaxInput, StepInput;
         bool IgnoreScrollEvents;
-        float Step = 0;
+        float Step = 1;
+        float Speed = 1;
+        float Min = 0;
+        float Max = 1;
+
+        AnimationMode CurrentAnimation;
+        bool[] AnimationActive;
+        bool[] AnimationReverse;
 
         public AnimationSlider(int inputCount)
         {
@@ -26,14 +35,20 @@ namespace ShaderPreview.UI
 
             ValueArray = new float[inputCount];
             ValueScrolls = new UIScrollBar[inputCount];
+            PlayButtons = new UIButton[inputCount];
+            AnimationActive = new bool[inputCount];
+            AnimationReverse = new bool[inputCount];
 
             for (int i = 0; i < inputCount; i++)
             {
                 UIScrollBar scroll = new UIScrollBar
                 {
+                    Width = new(-20, 1),
                     Height = 8,
 
                     Top = y + 4,
+                    Left = 20,
+
                     BarSize = 8,
                     BarSizeAbsolute = true,
                     Horizontal = true,
@@ -61,6 +76,12 @@ namespace ShaderPreview.UI
 
             RadioButtonGroup group = new();
 
+            group.ButtonClicked += (btn, tag) =>
+            {
+                if (tag is AnimationMode mode)
+                    CurrentAnimation = mode;
+            };
+
             Elements = new(this)
             {
                 new UINumberInput
@@ -80,8 +101,7 @@ namespace ShaderPreview.UI
                 }.Assign(out MinInput)
                 .OnEvent(UINumberInput.ValueChanged, (input, _) =>
                 {
-                    foreach (UIScrollBar scroll in ValueScrolls)
-                        scroll.ScrollMin = (float)input.Value;
+                    Min = (float)input.Value;
                 }),
                 new UILabel
                 {
@@ -112,8 +132,7 @@ namespace ShaderPreview.UI
                 }.Assign(out MaxInput)
                 .OnEvent(UINumberInput.ValueChanged, (input, _) =>
                 {
-                    foreach (UIScrollBar scroll in ValueScrolls)
-                        scroll.ScrollMax = (float)input.Value;
+                    Max = (float)input.Value;
                 }),
                 new UILabel
                 {
@@ -131,7 +150,7 @@ namespace ShaderPreview.UI
                     Left = new(4, .8f),
                     Width = new(-4, .2f),
                     TextAlign = new(.5f),
-                    AllowNegative = false
+                    Value = 1
                 }.Assign(out StepInput)
                 .OnEvent(UINumberInput.ValueChanged, (input, _) =>
                 {
@@ -153,13 +172,13 @@ namespace ShaderPreview.UI
                     Top = y + 25,
                     Height = 0,
                     ElementSpacing = 5
-                }.Execute(flow => 
+                }.Execute(flow =>
                 {
                     for (int i = 0; i < 4; i++)
                     {
                         flow.Elements.Add(new UIButton
                         {
-                            Image = Content.AnimationMode,
+                            Image = Content.AnimationAssets,
                             ImageFrame = new(i * 16, 0, 16, 16),
                             ImageAlign = new(.5f),
 
@@ -169,9 +188,9 @@ namespace ShaderPreview.UI
                             Height = 20,
                             Selected = i == 0,
                             RadioGroup = group,
-                            RadioTag = i,
+                            RadioTag = (AnimationMode)i,
                             CanDeselect = false,
-                            
+
                         });
                     }
                     flow.Elements.Add(new UIContainer
@@ -179,9 +198,9 @@ namespace ShaderPreview.UI
                         Width = 80,
                         Height = 20,
 
-                        Elements = 
+                        Elements =
                         {
-                            new UILabel 
+                            new UILabel
                             {
                                 Top = 2,
                                 Width = 40,
@@ -194,7 +213,7 @@ namespace ShaderPreview.UI
                                 Width = new(-40, 1),
                                 Left = new(0, 1, -1),
                                 Value = 1
-                            }
+                            }.OnEvent(UINumberInput.ValueChanged, (inp, _) => Speed = (float)inp.Value)
                         }
                     });
                 })
@@ -203,7 +222,109 @@ namespace ShaderPreview.UI
             foreach (UIScrollBar scroll in ValueScrolls)
                 Elements.Add(scroll);
 
+            for (int i = 0; i < AnimationActive.Length; i++)
+            {
+                UIButton play = new()
+                {
+                    RadioGroup = new(),
+                    Width = 16,
+                    Height = 16,
+
+                    Top = i * 20,
+
+                    Image = Content.AnimationAssets,
+                    ImageFrame = new(64, 0, 16, 16),
+                    ImageAlign = new(.5f),
+
+                    SelectedBackColor = Color.White
+                };
+                int index = i;
+                play.OnEvent(ClickEvent, (btn, _) => AnimationActive[index] = btn.Selected);
+                Elements.Add(play);
+                PlayButtons[i] = play;
+            }
+
             Values = new(this);
+        }
+
+        protected override void UpdateSelf()
+        {
+            for (int i = 0; i < AnimationActive.Length; i++)
+            {
+                UIScrollBar scroll = ValueScrolls[i];
+
+                scroll.ScrollMax = Max;
+                scroll.ScrollMin = Min;
+
+                if (!AnimationActive[i])
+                    continue;
+
+                float step = Step * Speed;
+
+                switch (CurrentAnimation)
+                {
+                    case AnimationMode.ForwardBackward:
+                        bool negStep = step < 0;
+                        step *= AnimationReverse[i] ? -1 : 1;
+
+                        float value = scroll.ScrollPosition + step;
+
+                        if (value > scroll.ScrollMax)
+                            AnimationReverse[i] = !negStep;
+                        
+                        else if (value < scroll.ScrollMin)
+                            AnimationReverse[i] = negStep;
+                        
+                        scroll.ScrollPosition = value;
+                        
+                        break;
+
+                    case AnimationMode.ForwardOnly:
+                        value = scroll.ScrollPosition + step;
+
+                        if (value > scroll.ScrollMax)
+                            value -= scroll.ScrollMax - scroll.ScrollMin;
+
+                        else if (value < scroll.ScrollMin)
+                            value += scroll.ScrollMax - scroll.ScrollMin;
+
+                        scroll.ScrollPosition = value;
+
+                        break;
+
+                    case AnimationMode.Once:
+                        value = scroll.ScrollPosition + step;
+
+                        if (value > scroll.ScrollMax)
+                        {
+                            value = scroll.ScrollMin;
+                            AnimationActive[i] = false;
+                            PlayButtons[i].Selected = false;
+                        }
+
+                        else if (value < scroll.ScrollMin)
+                        {
+                            value = scroll.ScrollMax;
+                            AnimationActive[i] = false;
+                            PlayButtons[i].Selected = false;
+                        }
+
+                        scroll.ScrollPosition = value;
+                        break;
+
+                    case AnimationMode.Incement:
+
+                        scroll.ScrollPosition += step;
+
+                        float a = 0;
+                        float b = scroll.ScrollPosition * 2;
+                        scroll.ScrollMin = Math.Min(a, b);
+                        scroll.ScrollMax = Math.Max(a, b);
+                        break;
+                }
+            }
+
+            base.UpdateSelf();
         }
 
         public override void Recalculate()
@@ -229,12 +350,11 @@ namespace ShaderPreview.UI
 
         float ApplyStepToValue(float value)
         {
-            if (Step <= 0)
-                return value;
+            float absStep = MathF.Abs(Step);
 
-            float rem = value % Step;
-            value = MathF.Floor(value / Step) * Step;
-            value += MathF.Round(rem / Step) * Step;
+            float rem = value % absStep;
+            value = MathF.Floor(value / absStep) * absStep;
+            value += MathF.Round(rem / absStep) * absStep;
             return value;
         }
 
@@ -253,6 +373,13 @@ namespace ShaderPreview.UI
                 get => Parent.ValueArray[index];
                 set => Parent.ValueScrolls[index].ScrollPosition = value;
             }
+        }
+        enum AnimationMode
+        {
+            ForwardBackward,
+            ForwardOnly,
+            Once,
+            Incement
         }
     }
 }

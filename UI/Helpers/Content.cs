@@ -8,13 +8,13 @@ namespace ShaderPreview.UI.Helpers
         public static Effect Gradient = null!;
         public static Effect Ellipse = null!;
 
-        public static Texture2D AnimationMode = null!;
+        public static Texture2D AnimationAssets = null!;
 
         internal static void Load(ContentManager content)
         {
             Gradient = content.Load<Effect>("Gradient");
             Ellipse = content.Load<Effect>("Ellipse");
-            AnimationMode = content.Load<Texture2D>("AnimationMode");
+            AnimationAssets = content.Load<Texture2D>("AnimationAssets");
         }
     }
 }
