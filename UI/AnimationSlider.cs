@@ -18,7 +18,7 @@ namespace ShaderPreview.UI
         UIButton[] PlayButtons;
         UINumberInput MinInput, MaxInput, StepInput;
         bool IgnoreScrollEvents;
-        float Step = 1;
+        float Step = 0;
         float Speed = 1;
         float Min = 0;
         float Max = 1;
@@ -149,8 +149,7 @@ namespace ShaderPreview.UI
                     Height = 20,
                     Left = new(4, .8f),
                     Width = new(-4, .2f),
-                    TextAlign = new(.5f),
-                    Value = 1
+                    TextAlign = new(.5f)
                 }.Assign(out StepInput)
                 .OnEvent(UINumberInput.ValueChanged, (input, _) =>
                 {
@@ -350,6 +349,9 @@ namespace ShaderPreview.UI
 
         float ApplyStepToValue(float value)
         {
+            if (Step == 0)
+                return value;
+
             float absStep = MathF.Abs(Step);
 
             float rem = value % absStep;

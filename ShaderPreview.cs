@@ -26,6 +26,9 @@ namespace ShaderPreview
         public static Texture2D Pixel = null!;
         public static SpriteFont Consolas10 = null!;
 
+        public static Texture2D? BaseTexture;
+        public static string? BaseTexturePath;
+
         public static ShaderPreview Instance = null!;
 
         public static Rect TextureScreenRect;
@@ -72,7 +75,14 @@ namespace ShaderPreview
             Vec2 screenSize = new(vp.Width, vp.Height);
             screenSize.X -= (vp.Width - Interface.SidePanel?.ScreenRect.Left) ?? 0;
 
-            Vec2 size = new(MathF.Min(screenSize.X, screenSize.Y) * .8f);
+            Vec2 size = screenSize;
+            size *= .8f;
+
+            Vec2 textureSize = BaseTexture is null ? new(100) : new(BaseTexture.Width, BaseTexture.Height);
+
+            float scale = Math.Min(size.X / textureSize.X, size.Y / textureSize.Y);
+            size = textureSize * scale;
+
             TextureScreenRect = new Rect(((screenSize - size) / 2).Round(), size.Round());
 
             Interface.Update();
@@ -86,7 +96,7 @@ namespace ShaderPreview
             GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
             GraphicsDevice.ScissorRectangle = new(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            SpriteBatch.Begin(SpriteSortMode.Immediate);
+            SpriteBatch.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
 
             SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Color.White * .3f);
 
@@ -95,7 +105,7 @@ namespace ShaderPreview
                 ShaderCompiler.Shader.CurrentTechnique.Passes[0].Apply();
             }
             
-            SpriteBatch.Draw(Pixel, TextureScreenRect, Color.White);
+            SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Color.White);
 
             SpriteBatch.End();
             SpriteBatch.Begin();
