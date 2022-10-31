@@ -114,6 +114,12 @@ namespace ShaderPreview.ParameterInputs
                 AllInputs.Add((ParameterInput)Activator.CreateInstance(type)!);
             }
         }
+        public static void ResetUI()
+        {
+            foreach (ParameterInput[] arr in CurrentShaderParams.Values)
+                foreach (ParameterInput param in arr)
+                    param.ConfigInterface = null;
+        }
 
         public abstract bool AppliesToParameter(EffectParameter parameter);
         protected virtual UIElement? GetConfigInterface() => null;

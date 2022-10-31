@@ -41,9 +41,9 @@ namespace ShaderPreview.UI.Elements
                 float xOff = TextAlign.X * (MaxLineWidth - lineWidth);
                 Vec2 off = new(xOff, 0);
                 if (TextShadowColor == Color.Transparent)
-                    spriteBatch.DrawString(Font, line, (ScreenRect.Position + pos + off).Round(), TextColor);
+                    spriteBatch.DrawString(Font, line, (ScreenRect.Position + pos + off).Rounded(), TextColor);
                 else
-                    spriteBatch.DrawStringShaded(Font, line, (ScreenRect.Position + pos + off).Round(), TextColor, TextShadowColor);
+                    spriteBatch.DrawStringShaded(Font, line, (ScreenRect.Position + pos + off).Rounded(), TextColor, TextShadowColor);
                 pos.Y += Font.LineSpacing;
             }
         }

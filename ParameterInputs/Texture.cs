@@ -5,9 +5,9 @@ using System.IO;
 
 namespace ShaderPreview.ParameterInputs
 {
-	public class TextureInput : ParameterInput
+	public class Texture : ParameterInput
     {
-        public Texture2D? Texture;
+        public Texture2D? TextureValue;
 
         public override string DisplayName => "Texture";
 
@@ -19,7 +19,7 @@ namespace ShaderPreview.ParameterInputs
 
         public override void UpdateSelf(EffectParameter parameter, bool selected)
         {
-            parameter.SetValue(Texture ?? ShaderPreview.Pixel);
+            parameter.SetValue(TextureValue ?? ShaderPreview.Pixel);
         }
 
 		protected override UIElement? GetConfigInterface()
@@ -36,7 +36,7 @@ namespace ShaderPreview.ParameterInputs
                 {
                     try
                     {
-                        Texture = Texture2D.FromFile(ShaderPreview.Instance.Graphics.GraphicsDevice, ShaderPatch);
+                        TextureValue = Texture2D.FromFile(ShaderPreview.Instance.Graphics.GraphicsDevice, ShaderPatch);
                     }
                     catch
 					{

@@ -98,7 +98,13 @@ namespace ShaderPreview
                     }
 
                     StringBuilder sb = new();
-                    foreach (Match match in ErrorRegex.Matches(errorsWarns))
+                    MatchCollection errors = ErrorRegex.Matches(errorsWarns);
+                    if (errors.Count == 0)
+                    {
+                        Errors = errorsWarns;
+                        return;
+                    }
+                    foreach (Match match in errors)
                     {
                         if (sb.Length > 0)
                             sb.AppendLine();

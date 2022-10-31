@@ -411,7 +411,7 @@ namespace ShaderPreview.UI.Elements
 
                         }
 
-                        spriteBatch.DrawString(Font, line, new Vec2(x, y).Round(), TextColor);
+                        spriteBatch.DrawString(Font, line, new Vec2(x, y).Rounded(), TextColor);
                     }
                     y += Font.LineSpacing;
                 }

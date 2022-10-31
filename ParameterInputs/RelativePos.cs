@@ -2,10 +2,11 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ShaderPreview.Structures;
+using System;
 
 namespace ShaderPreview.ParameterInputs
 {
-    public class RelativePosInput : ParameterInput
+    public class RelativePos : ParameterInput
     {
         public override string DisplayName => "Relative pos";
 
@@ -38,7 +39,11 @@ namespace ShaderPreview.ParameterInputs
             }
 
             if (Grabbed && Interface.Root.MouseState.LeftButton == ButtonState.Released)
+            {
                 Grabbed = false;
+
+                Pos = (Interface.Root.MousePosition.ClampedTo(ShaderPreview.TextureMaxScreenRect) - ShaderPreview.TextureScreenRect.Position) / ShaderPreview.TextureScreenRect.Size;
+            }
 
             if (Grabbed)
                 Pos = (Interface.Root.MousePosition - ShaderPreview.TextureScreenRect.Position) / ShaderPreview.TextureScreenRect.Size;

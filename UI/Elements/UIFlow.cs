@@ -28,12 +28,12 @@ namespace ShaderPreview.UI.Elements
 
             foreach (UIElement element in Elements)
             {
-                if (pos.X + element.ScreenRect.Width > ScreenRect.Width)
+                if (pos.X + element.ScreenRect.Width + element.Margin.Horizontal > ScreenRect.Width)
                 {
                     if (pos.X == 0)
                     {
-                        size.X = Math.Max(size.X, element.ScreenRect.Width);
-                        lineMaxHeight = element.ScreenRect.Height;
+                        size.X = Math.Max(size.X, element.ScreenRect.Width + element.Margin.Horizontal);
+                        lineMaxHeight = element.ScreenRect.Height + element.Margin.Vertical;
                         continue;
                     }
 
@@ -44,8 +44,8 @@ namespace ShaderPreview.UI.Elements
                     size.Y += lineMaxHeight;
                     lineMaxHeight = 0;
                 }
-                lineMaxHeight = Math.Max(lineMaxHeight, element.ScreenRect.Height);
-                pos.X += element.ScreenRect.Width + ElementSpacing;
+                lineMaxHeight = Math.Max(lineMaxHeight, element.ScreenRect.Height + element.Margin.Vertical);
+                pos.X += element.ScreenRect.Width + ElementSpacing + element.Margin.Horizontal;
             }
 
             if (lineMaxHeight > 0)
@@ -78,13 +78,13 @@ namespace ShaderPreview.UI.Elements
 
             foreach (UIElement element in Elements)
             {
-                if (pos.X + element.ScreenRect.Width > ScreenRect.Right)
+                if (pos.X + element.ScreenRect.Width + element.Margin.Horizontal > ScreenRect.Right)
                 {
                     if (pos.X == 0)
                     {
-                        CurrentLayoutElementPos = pos;
+                        CurrentLayoutElementPos = pos + element.Margin.TopLeft;
                         element.Recalculate();
-                        lineMaxHeight = element.ScreenRect.Height;
+                        lineMaxHeight = element.ScreenRect.Height + element.Margin.Vertical;
                         continue;
                     }
 
@@ -92,10 +92,10 @@ namespace ShaderPreview.UI.Elements
                     pos.Y += lineMaxHeight + ElementSpacing;
                     lineMaxHeight = 0;
                 }
-                CurrentLayoutElementPos = pos;
+                CurrentLayoutElementPos = pos + element.Margin.TopLeft;
                 element.Recalculate();
-                lineMaxHeight = Math.Max(lineMaxHeight, element.ScreenRect.Height);
-                pos.X += element.ScreenRect.Width + ElementSpacing;
+                lineMaxHeight = Math.Max(lineMaxHeight, element.ScreenRect.Height + element.Margin.Vertical);
+                pos.X += element.ScreenRect.Width + ElementSpacing + element.Margin.Horizontal;
             }
 
             PerformingLayout = false;

@@ -42,9 +42,10 @@ namespace ShaderPreview.Structures
             Y = v;
         }
 
-        public Vec2 Floor() => new(MathF.Floor(X), MathF.Floor(Y));
-        public Vec2 Ceiling() => new(MathF.Ceiling(X), MathF.Ceiling(Y));
-        public Vec2 Round() => new(MathF.Round(X), MathF.Round(Y));
+        public Vec2 Floored() => new(MathF.Floor(X), MathF.Floor(Y));
+        public Vec2 Ceiled() => new(MathF.Ceiling(X), MathF.Ceiling(Y));
+        public Vec2 Rounded() => new(MathF.Round(X), MathF.Round(Y));
+        public Vec2 ClampedTo(Rect rect) => new(Math.Clamp(X, rect.Left, rect.Right), Math.Clamp(Y, rect.Top, rect.Bottom));
 
         public override bool Equals(object? obj)
         {

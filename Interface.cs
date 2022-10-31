@@ -80,7 +80,9 @@ namespace ShaderPreview
             Root.Update();
             if (Root.GetKeyState(Keys.F12) == KeybindState.JustReleased)
             {
+                ParameterInput.ResetUI();
                 Init();
+                Root.Recalculate();
                 Root.Update();
             }
         }

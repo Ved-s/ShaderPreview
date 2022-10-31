@@ -32,6 +32,7 @@ namespace ShaderPreview
         public static ShaderPreview Instance = null!;
 
         public static Rect TextureScreenRect;
+        public static Rect TextureMaxScreenRect;
         public static GameTime GameTime = new();
 
         public ShaderPreview()
@@ -68,12 +69,12 @@ namespace ShaderPreview
 
         protected override void Update(GameTime gameTime)
         {
-            ShaderCompiler.EndCompiling();
-
             GameTime = gameTime;
             Viewport vp = GraphicsDevice.Viewport;
             Vec2 screenSize = new(vp.Width, vp.Height);
             screenSize.X -= (vp.Width - Interface.SidePanel?.ScreenRect.Left) ?? 0;
+
+            TextureMaxScreenRect = new(Vec2.Zero, screenSize);
 
             Vec2 size = screenSize;
             size *= .8f;
@@ -83,8 +84,9 @@ namespace ShaderPreview
             float scale = Math.Min(size.X / textureSize.X, size.Y / textureSize.Y);
             size = textureSize * scale;
 
-            TextureScreenRect = new Rect(((screenSize - size) / 2).Round(), size.Round());
+            TextureScreenRect = new Rect(((screenSize - size) / 2).Rounded(), size.Rounded());
 
+            ShaderCompiler.EndCompiling();
             Interface.Update();
             ParameterInput.Update();
 

@@ -40,6 +40,16 @@ namespace ShaderPreview.UI.Elements
         public Rectangle? ImageFrame = null;
         public Vec2 ImageAlign;
 
+        public bool Selectable 
+        {
+            get => selectable;
+            set
+            {
+                selectable = value;
+                if (!value)
+                    Selected = false;
+            }
+        }
         public bool CanDeselect = true;
         public bool Selected
         {
@@ -71,6 +81,7 @@ namespace ShaderPreview.UI.Elements
         private string? text;
         internal bool SelectedInternal;
         private RadioButtonGroup? radioGroup;
+        private bool selectable;
 
         public override void Recalculate()
         {
@@ -87,7 +98,7 @@ namespace ShaderPreview.UI.Elements
 
         protected override void UpdateSelf()
         {
-            if (RadioGroup is not null && Hovered && Root.MouseLeftKey == KeybindState.JustPressed)
+            if (Hovered && Root.MouseLeftKey == KeybindState.JustPressed && (RadioGroup is not null || Selectable))
             {
                 if (!Selected || CanDeselect)
                     Selected = !Selected;

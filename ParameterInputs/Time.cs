@@ -3,7 +3,7 @@ using System;
 
 namespace ShaderPreview.ParameterInputs
 {
-    public class CurrentTimeInput : ParameterInput
+    public class Time : ParameterInput
     {
         public override string DisplayName => "Time";
 

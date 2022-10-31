@@ -242,7 +242,7 @@ namespace ShaderPreview.UI.Pages
                 {
                     if (param is null)
                     {
-                        spriteBatch.DrawString(Font, "Unknown parameter", (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 4)) / 2)).Ceiling(), Color.White);
+                        spriteBatch.DrawString(Font, "Unknown parameter", (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 4)) / 2)).Ceiled(), Color.White);
                     }
                     else
                     {
@@ -273,7 +273,7 @@ namespace ShaderPreview.UI.Pages
                             (data, Color.White)
                             );
 
-                        spriteBatch.DrawStrings(Font, strings, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 3) * 2) / 2)).Floor());
+                        spriteBatch.DrawStrings(Font, strings, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 3) * 2) / 2)).Floored());
 
                         ParameterInput? input;
                         if (!ParameterInput.CurrentActiveParams.TryGetValue(param.Name, out input))
@@ -281,7 +281,7 @@ namespace ShaderPreview.UI.Pages
 
                         string boundTo = $"Bound to: {input?.DisplayName ?? "Nothing"}";
 
-                        spriteBatch.DrawString(Font, boundTo, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 3) * 2) / 2 + (Font.LineSpacing - 3))).Floor(), Color.White);
+                        spriteBatch.DrawString(Font, boundTo, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 3) * 2) / 2 + (Font.LineSpacing - 3))).Floored(), Color.White);
                     }
                 }
             }

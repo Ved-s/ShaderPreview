@@ -1,0 +1,4 @@
+bool:
+	implement bool switch
+	
+being able to select states passed to Begin

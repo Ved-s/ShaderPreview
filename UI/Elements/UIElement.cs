@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace ShaderPreview.UI.Elements
 {
-    public abstract class UIElement
+    public class UIElement
     {
         public static readonly ElementEvent<Empty, UIElement> UpdateEvent = new();
         public static readonly ElementEvent<SpriteBatch, UIElement> DrawEvent = new();
