@@ -12,6 +12,8 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -50,8 +52,22 @@ namespace ShaderPreview
             {
                 Interface.SizeChanged();
             };
-            ParameterInput.Autoload();
-            ShaderCompiler.SetShaderFilePath("Shader.fx");
+            Autoloading.Autoload();
+
+            if (File.Exists("state.json"))
+            {
+                try
+                {
+                    JsonNode? node = JsonNode.Parse(File.ReadAllText("state.json"));
+                    if (node is JsonObject state)
+                        LoadState(state);
+                }
+                catch { }
+            }
+            
+            if (ShaderCompiler.ShaderPath.IsNullEmptyOrWhitespace())
+                ShaderCompiler.SetShaderFilePath("Shader.fx");
+            
             base.Initialize();
         }
 
@@ -59,12 +75,15 @@ namespace ShaderPreview
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             Pixel = new(GraphicsDevice, 1, 1);
-            Pixel.SetData(new Color[] { Color.White });
+            Pixel.SetData(new Microsoft.Xna.Framework.Color[] { Microsoft.Xna.Framework.Color.White });
             Consolas10 = Content.Load<SpriteFont>("Consolas10");
             
             UI.Helpers.Content.Load(Content);
             Interface.Init();
             Interface.Root.Font = Consolas10;
+
+            if (BaseTexturePath is not null)
+                BaseTexture = Texture2D.FromFile(GraphicsDevice, BaseTexturePath);
         }
 
         protected override void Update(GameTime gameTime)
@@ -95,30 +114,55 @@ namespace ShaderPreview
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
+            GraphicsDevice.Clear(new Microsoft.Xna.Framework.Color(.1f, .1f, .1f));
             GraphicsDevice.ScissorRectangle = new(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            SpriteBatch.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
+            // TODO: make this configurable from UI
+            SpriteBatch.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone);
 
-            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Color.White * .3f);
+            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Microsoft.Xna.Framework.Color.White * .3f);
 
             if (ShaderCompiler.Shader is not null)
             {
                 ShaderCompiler.Shader.CurrentTechnique.Passes[0].Apply();
             }
-            
-            SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Color.White);
+
+            SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Microsoft.Xna.Framework.Color.White);
 
             SpriteBatch.End();
             SpriteBatch.Begin();
             ParameterInput.Draw(SpriteBatch);
             Interface.Draw(SpriteBatch);
-            
-            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10), Color.White, Color.Black);
+
+            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
 
             SpriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        protected override void EndRun()
+        {
+            JsonObject state = new();
+            SaveState(state);
+            File.WriteAllText("state.json", state.ToJsonString(new() { WriteIndented = true }));
+        }
+
+        private void SaveState(JsonObject state)
+        {
+            state["shader"] = ShaderCompiler.ShaderPath;
+            state["texture"] = BaseTexturePath;
+            state["inputs"] = ParameterInput.State;
+        }
+        
+        private void LoadState(JsonObject state)
+        {
+            if (state.TryGet("inputs", out JsonObject? inputs))
+                ParameterInput.State = inputs;
+            if (state.TryGet("shader", out string? shader))
+                ShaderCompiler.SetShaderFilePath(shader);
+            if (state.TryGet("texture", out string? texture))
+                BaseTexturePath = texture;
         }
     }
 }

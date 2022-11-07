@@ -1,15 +1,19 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Text.Json.Serialization;
 
 namespace ShaderPreview.Structures
 {
+    
     public struct Vec2
     {
+        [JsonInclude]
         public float X, Y;
 
         public static Vec2 Zero => new(0);
         public static Vec2 One => new(1);
 
+        [JsonIgnore]
         public float Length 
         {
             get => MathF.Sqrt(X * X + Y * Y);
@@ -20,6 +24,7 @@ namespace ShaderPreview.Structures
                 Y = MathF.Sin(angle) * value;
             }
         }
+        [JsonIgnore]
         public Angle Angle 
         {
             get => new(MathF.Atan2(Y, X));

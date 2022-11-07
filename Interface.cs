@@ -40,8 +40,8 @@ namespace ShaderPreview
 
                         Margin = 5,
 
-                        BackColor = Color.Transparent,
-                        BorderColor = Color.Transparent,
+                        BackColor = Microsoft.Xna.Framework.Color.Transparent,
+                        BorderColor = Microsoft.Xna.Framework.Color.Transparent,
 
                         CanGrabTop = false,
                         CanGrabRight = false,

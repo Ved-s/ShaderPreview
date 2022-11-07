@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ShaderPreview.ParameterInputs;
 using ShaderPreview.Structures;
 using ShaderPreview.UI.Elements;
 using System;
@@ -9,6 +8,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using ParameterInput = ShaderPreview.ParameterInputs.ParameterInput;
 
 namespace ShaderPreview.UI.Pages
 {
@@ -242,7 +243,7 @@ namespace ShaderPreview.UI.Pages
                 {
                     if (param is null)
                     {
-                        spriteBatch.DrawString(Font, "Unknown parameter", (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 4)) / 2)).Ceiled(), Color.White);
+                        spriteBatch.DrawString(base.Font, "Unknown parameter", (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (base.Font.LineSpacing - 4)) / 2)).Ceiled(), Microsoft.Xna.Framework.Color.White);
                     }
                     else
                     {
@@ -281,7 +282,7 @@ namespace ShaderPreview.UI.Pages
 
                         string boundTo = $"Bound to: {input?.DisplayName ?? "Nothing"}";
 
-                        spriteBatch.DrawString(Font, boundTo, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (Font.LineSpacing - 3) * 2) / 2 + (Font.LineSpacing - 3))).Floored(), Color.White);
+                        spriteBatch.DrawString(base.Font, boundTo, (ScreenRect.Position + new Vec2(5, (ScreenRect.Height - (base.Font.LineSpacing - 3) * 2) / 2 + (base.Font.LineSpacing - 3))).Floored(), Microsoft.Xna.Framework.Color.White);
                     }
                 }
             }

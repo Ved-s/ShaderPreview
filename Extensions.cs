@@ -2,10 +2,13 @@
 using ShaderPreview.Structures;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace ShaderPreview
@@ -40,5 +43,32 @@ namespace ShaderPreview
             EffectParameterStateKeySetter(param, state);
         }
 
+        public static bool TryGet<T>(this JsonObject node, string key, [NotNullWhen(true)] out T? value, bool allowNull = false)
+        {
+            value = default;
+            if (!node.TryGetPropertyValue(key, out var subNode))
+                return false;
+
+            if (subNode is null)
+                return allowNull;
+
+            if (subNode is T t)
+            {
+                value = t;
+                return true;
+            }
+            else if (subNode is JsonValue v)
+            {
+                return v.TryGetValue(out value);
+            }
+            return false;
+        }
+
+        public static bool IsNullEmptyOrWhitespace(this string str)
+        {
+            return string.IsNullOrEmpty(str) || string.IsNullOrWhiteSpace(str);
+        }
+
+        public static JsonObject Save(this IState state) => IState.Save(state);
     }
 }

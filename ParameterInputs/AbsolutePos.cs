@@ -1,9 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Win32.SafeHandles;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ShaderPreview.Structures;
 using ShaderPreview.UI.Elements;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace ShaderPreview.ParameterInputs
 {
@@ -11,7 +14,7 @@ namespace ShaderPreview.ParameterInputs
     {
         public override string DisplayName => "Absolute pos";
 
-        public Vec2 Pos;
+        public Vec2 Pos = new(.5f);
         public Vec2 PointerSize = new(10);
 
         public bool TexturePosAsOrigin = false;
@@ -27,45 +30,36 @@ namespace ShaderPreview.ParameterInputs
                 && parameter.ColumnCount == 2;
         }
 
-        public override ParameterInput NewInstance(EffectParameter parameter)
-        {
-            return new AbsolutePos
-            {
-                Pos = ShaderPreview.TextureMaxScreenRect.Center
-            };
-        }
-
         public override void UpdateSelf(EffectParameter parameter, bool selected)
         {
-            Vec2 borderSize = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Size : ShaderPreview.TextureMaxScreenRect.Size;
+            Vec2 origin = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Position : Vec2.Zero;
+            Vec2 originSize = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Size : ShaderPreview.TextureMaxScreenRect.Size;
 
             if (selected)
             {
-                Vec2 origin = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Position : Vec2.Zero;
-
                 if (!Grabbed)
                 {
-                    Rect pointerRect = new(origin + Pos - PointerSize / 2, PointerSize);
+                    Rect pointerRect = new(origin + Pos * originSize - PointerSize / 2, PointerSize);
                     if (pointerRect.Contains(Interface.Root.MousePosition) && Interface.Root.MouseLeftKey == KeybindState.JustPressed)
                     {
                         Grabbed = true;
                     }
                 }
-
-                if (Grabbed && Interface.Root.MouseState.LeftButton == ButtonState.Released)
-                {
-                    Grabbed = false;
-
-                    Pos = Interface.Root.MousePosition.ClampedTo(ShaderPreview.TextureMaxScreenRect) - origin;
-                }
-
                 if (Grabbed)
-                    Pos = Interface.Root.MousePosition - origin;
+                {
+                    Pos = (Interface.Root.MousePosition - origin) / originSize;
+
+                    if (Interface.Root.MouseState.LeftButton == ButtonState.Released)
+                    {
+                        Grabbed = false;
+                        Pos = Pos.ClampedTo(new(0, 0, 1, 1));
+                    }
+                }
             }
 
-            Vec2 resultPos = Pos;
-            if (ReverseX) resultPos.X = borderSize.X - resultPos.X;
-            if (ReverseY) resultPos.Y = borderSize.Y - resultPos.Y;
+            Vec2 resultPos = Pos * originSize + origin;
+            if (ReverseX) resultPos.X = originSize.X - resultPos.X;
+            if (ReverseY) resultPos.Y = originSize.Y - resultPos.Y;
 
             parameter.SetValue(resultPos);
         }
@@ -73,18 +67,20 @@ namespace ShaderPreview.ParameterInputs
         public override void DrawSelf(SpriteBatch spriteBatch, bool selected)
         {
             Vec2 size = selected ? PointerSize : PointerSize / 2;
-            Vec2 origin = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Position : Vec2.Zero;
 
-            Vec2 pos = origin + Pos;
+            Vec2 origin = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Position : Vec2.Zero;
+            Vec2 originSize = TexturePosAsOrigin ? ShaderPreview.TextureScreenRect.Size : ShaderPreview.TextureMaxScreenRect.Size;
+
+            Vec2 pos = origin + Pos * originSize;
 
             Rect pointerRect = new(pos - size / 2, size);
 
-            spriteBatch.FillRectangle(pointerRect, Color.Yellow * (selected ? .8f : 0.3f));
+            spriteBatch.FillRectangle(pointerRect, Microsoft.Xna.Framework.Color.Yellow * (selected ? .8f : 0.3f));
 
             if (selected)
-                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White, Color.Black);
+                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
             else
-                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White * .3f);
+                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White * .3f);
         }
 
         protected override UIElement? GetConfigInterface()
@@ -135,8 +131,8 @@ namespace ShaderPreview.ParameterInputs
                                 Selected = ReverseX,
                                 Width = 0,
                                 Height = 0,
-                                SelectedBackColor = Color.White,
-                                SelectedTextColor = Color.Black
+                                SelectedBackColor = Microsoft.Xna.Framework.Color.White,
+                                SelectedTextColor = Microsoft.Xna.Framework.Color.Black
                             }.OnEvent(UIElement.ClickEvent, (btn, _) => 
                             {
                                 ReverseX = btn.Selected;
@@ -148,8 +144,8 @@ namespace ShaderPreview.ParameterInputs
                                 Selected = ReverseY,
                                 Width = 0,
                                 Height = 0,
-                                SelectedBackColor = Color.White,
-                                SelectedTextColor = Color.Black
+                                SelectedBackColor = Microsoft.Xna.Framework.Color.White,
+                                SelectedTextColor = Microsoft.Xna.Framework.Color.Black
                             }.OnEvent(UIElement.ClickEvent, (btn, _) =>
                             {
                                 ReverseY = btn.Selected;
@@ -158,6 +154,35 @@ namespace ShaderPreview.ParameterInputs
                     }
                 }
             };
+        }
+
+        public override JsonNode SaveState()
+        {
+            return new JsonObject
+            {
+                ["pos"] = JsonSerializer.SerializeToNode(Pos),
+                ["texture"] = TexturePosAsOrigin,
+                ["revx"] = ReverseX,
+                ["revy"] = ReverseY
+            };
+        }
+
+        public override void LoadState(JsonNode node)
+        {
+            if (node is not JsonObject obj)
+                return;
+
+            if (obj.TryGet("pos", out JsonNode? pos))
+                Pos = JsonSerializer.Deserialize<Vec2>(pos);
+
+            if (obj.TryGet("texture", out bool texture))
+                TexturePosAsOrigin = texture;
+
+            if (obj.TryGet("revx", out bool revx))
+                ReverseX = revx;
+
+            if (obj.TryGet("revy", out bool revy))
+                ReverseY = revy;
         }
     }
 }

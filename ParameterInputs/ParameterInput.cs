@@ -3,16 +3,42 @@ using ShaderPreview.UI.Elements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 namespace ShaderPreview.ParameterInputs
 {
-    public abstract class ParameterInput
+    public abstract class ParameterInput : IState
     {
+        internal static JsonObject State
+        {
+            get
+            {
+                if (StateData is not null)
+                    return StateData;
+
+                JsonObject state = new();
+
+                foreach (var kvp in CurrentActiveParams)
+                {
+                    JsonObject input = kvp.Value.Save();
+                    if (input is null)
+                        continue;
+
+                    state[kvp.Key] = input;
+                }
+                return state;
+            }
+
+            set => StateData = value;
+        }
+
         public static readonly List<ParameterInput> AllInputs = new();
         public static readonly Dictionary<string, ParameterInput[]> CurrentShaderParams = new();
         public static Dictionary<string, ParameterInput> CurrentActiveParams = new();
+
+        private static JsonObject? StateData;
         private static Dictionary<string, (EffectParameterType type, EffectParameterClass @class, int rows, int cols)> CurrentShaderParamInfos = new();
-        private UIElement? configInterface;
+
 
         public abstract string DisplayName { get; }
         public string ParameterName { get; internal set; } = null!;
@@ -21,6 +47,7 @@ namespace ShaderPreview.ParameterInputs
             get => configInterface ??= GetConfigInterface();
             protected set => configInterface = value;
         }
+        private UIElement? configInterface;
 
         public static void ShaderChanged()
         {
@@ -79,6 +106,21 @@ namespace ShaderPreview.ParameterInputs
             foreach (EffectParameter param in shader.Parameters)
                 CurrentShaderParamInfos[param.Name] = (param.ParameterType, param.ParameterClass, param.RowCount, param.ColumnCount);
 
+            if (StateData is not null)
+            {
+                foreach (var kvp in CurrentShaderParams)
+                {
+                    if (StateData[kvp.Key] is not JsonObject obj)
+                        continue;
+
+                    ParameterInput? input = IState.Load(obj, name => kvp.Value.FirstOrDefault(i => i.GetType().Name == name));
+                    if (input is null)
+                        continue;
+
+                    CurrentActiveParams[kvp.Key] = input;
+                }
+                StateData = null;
+            }
         }
         public static void Update()
         {
@@ -101,19 +143,13 @@ namespace ShaderPreview.ParameterInputs
                 kvp.Value.DrawSelf(spriteBatch, UI.Pages.ShaderParameters.SelectedParameter == kvp.Key);
 
         }
-        public static void Autoload()
+
+        internal static void Register(Type type)
         {
-            foreach (Type type in typeof(ParameterInput).Assembly.GetExportedTypes())
-            {
-                if (type.IsAbstract || type.IsInterface)
-                    continue;
-
-                if (!type.IsAssignableTo(typeof(ParameterInput)))
-                    continue;
-
+            if (type.IsAssignableTo(typeof(ParameterInput)))
                 AllInputs.Add((ParameterInput)Activator.CreateInstance(type)!);
-            }
         }
+
         public static void ResetUI()
         {
             foreach (ParameterInput[] arr in CurrentShaderParams.Values)
@@ -128,5 +164,7 @@ namespace ShaderPreview.ParameterInputs
         public virtual void DrawSelf(SpriteBatch spriteBatch, bool selected) { }
 
         public virtual ParameterInput NewInstance(EffectParameter parameter) => (ParameterInput)Activator.CreateInstance(GetType())!;
+        public virtual JsonNode SaveState() { return null!; }
+        public virtual void LoadState(JsonNode node) { }
     }
 }

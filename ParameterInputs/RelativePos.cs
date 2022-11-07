@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ShaderPreview.Structures;
 using System;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace ShaderPreview.ParameterInputs
 {
@@ -58,12 +60,29 @@ namespace ShaderPreview.ParameterInputs
 
             Rect pointerRect = new(pos - size / 2, size);
 
-            spriteBatch.FillRectangle(pointerRect, Color.Yellow * (selected ? .8f : 0.3f));
+            spriteBatch.FillRectangle(pointerRect, Microsoft.Xna.Framework.Color.Yellow * (selected ? .8f : 0.3f));
 
             if (selected)
-                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White, Color.Black);
+                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
             else
-                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White * .3f);
+                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White * .3f);
+        }
+
+        public override JsonNode SaveState()
+        {
+            return new JsonObject
+            {
+                ["pos"] = JsonSerializer.SerializeToNode(Pos)
+            };
+        }
+
+        public override void LoadState(JsonNode node)
+        {
+            if (node is not JsonObject obj)
+                return;
+
+            if (obj.TryGet("pos", out JsonNode? pos))
+                Pos = JsonSerializer.Deserialize<Vec2>(pos);
         }
     }
 }

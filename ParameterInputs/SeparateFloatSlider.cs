@@ -2,6 +2,8 @@
 using ShaderPreview.UI;
 using ShaderPreview.UI.Elements;
 using System;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace ShaderPreview.ParameterInputs
 {
@@ -60,6 +62,16 @@ namespace ShaderPreview.ParameterInputs
             }
 
             return container;
+        }
+
+        public override JsonNode SaveState()
+        {
+            return JsonSerializer.SerializeToNode(Values)!;
+        }
+
+        public override void LoadState(JsonNode node)
+        {
+            Values = JsonSerializer.Deserialize<float[]>(node) ?? Values;
         }
     }
 }

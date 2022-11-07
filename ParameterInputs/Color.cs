@@ -7,15 +7,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace ShaderPreview.ParameterInputs
 {
-    public class ColorInput : ParameterInput
+    public class Color : ParameterInput
     {
         public override string DisplayName => "Color";
 
-        Color Color = Color.Black;
+        Microsoft.Xna.Framework.Color CurrentColor = Microsoft.Xna.Framework.Color.Black;
 
         public override bool AppliesToParameter(EffectParameter parameter)
         {
@@ -27,9 +29,9 @@ namespace ShaderPreview.ParameterInputs
         public override void UpdateSelf(EffectParameter parameter, bool selected)
         {
             if (parameter.ColumnCount == 4)
-                parameter.SetValue(Color.ToVector4());
+                parameter.SetValue(CurrentColor.ToVector4());
             else
-                parameter.SetValue(Color.ToVector3());
+                parameter.SetValue(CurrentColor.ToVector3());
         }
 
         protected override UIElement? GetConfigInterface()
@@ -39,8 +41,25 @@ namespace ShaderPreview.ParameterInputs
             return new ColorSelector(alpha)
             {
                 Height = alpha ? 120 : 100,
-                Color = Color,
-            }.OnEvent(ColorSelector.ColorChanged, (_, color) => Color = color);
+                Color = CurrentColor,
+            }.OnEvent(ColorSelector.ColorChanged, (_, color) => CurrentColor = color);
+        }
+
+        public override JsonNode SaveState()
+        {
+            return new JsonObject
+            {
+                ["color"] = CurrentColor.PackedValue
+            };
+        }
+
+        public override void LoadState(JsonNode node)
+        {
+            if (node is not JsonObject obj)
+                return;
+
+            if (obj.TryGet("color", out uint color))
+                CurrentColor.PackedValue = color;
         }
     }
 }

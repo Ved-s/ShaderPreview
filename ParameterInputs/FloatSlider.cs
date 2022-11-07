@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace ShaderPreview.ParameterInputs
@@ -47,6 +49,16 @@ namespace ShaderPreview.ParameterInputs
             slider.OnEvent(AnimationSlider.ValueChanged, (_, value) => { Values[value.Index] = value.Value; });
 
             return slider;
+        }
+
+        public override JsonNode SaveState()
+        {
+            return JsonSerializer.SerializeToNode(Values)!;
+        }
+
+        public override void LoadState(JsonNode node)
+        {
+            Values = JsonSerializer.Deserialize<float[]>(node) ?? Values;
         }
     }
 }

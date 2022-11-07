@@ -40,6 +40,8 @@ namespace ShaderPreview.UI
         {
             Padding = new(8, 8);
 
+            float alphaOff = 0;
+
             if (withAlpha)
             {
                 Elements.Add(new UIGradientSlider
@@ -52,11 +54,12 @@ namespace ShaderPreview.UI
                     BarSize = 8,
                     BarSizeAbsolute = true
                 }.Assign(out Alpha)!);
+                alphaOff = 20;
             }
             Elements.Add(new UIGradientSlider
             {
                 Height = 10,
-                Top = 20,
+                Top = alphaOff + 0,
                 BarPadding = -3,
                 End = new(1, 0, 0, 1f),
                 BorderColor = new(100, 100, 100),
@@ -66,7 +69,7 @@ namespace ShaderPreview.UI
             Elements.Add(new UIGradientSlider
             {
                 Height = 10,
-                Top = 40,
+                Top = alphaOff + 20,
                 BarPadding = -3,
                 End = new(0, 1, 0, 1f),
                 BorderColor = new(100, 100, 100),
@@ -76,7 +79,7 @@ namespace ShaderPreview.UI
             Elements.Add(new UIGradientSlider
             {
                 Height = 10,
-                Top = 60,
+                Top = alphaOff + 40,
                 BarPadding = -3,
                 End = new(0, 0, 1, 1f),
                 BorderColor = new(100, 100, 100),

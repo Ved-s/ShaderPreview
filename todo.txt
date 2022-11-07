@@ -1,4 +1,8 @@
 bool:
 	implement bool switch
-	
+
+float/int:
+	constant number inputs
+
 being able to select states passed to Begin
+save/load state
