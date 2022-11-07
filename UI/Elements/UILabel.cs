@@ -15,7 +15,14 @@ namespace ShaderPreview.UI.Elements
         public string? Text
         {
             get => text;
-            set { text = value; Recalculate(); }
+            set 
+            {
+                if (text == value)
+                    return;
+
+                text = value;
+                Recalculate(); 
+            }
         }
 
         public Vec2 TextAlign;

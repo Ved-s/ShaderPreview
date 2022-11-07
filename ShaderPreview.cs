@@ -1,20 +1,11 @@
 ﻿extern alias mgfxc;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using ShaderPreview.ParameterInputs;
 using ShaderPreview.Structures;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Extensions;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json.Nodes;
-
-using Color = Microsoft.Xna.Framework.Color;
 
 namespace ShaderPreview
 {
@@ -36,6 +27,7 @@ namespace ShaderPreview
         public static GameTime GameTime = new();
 
         public static RenderTarget2D RenderTarget = null!;
+        public static float TextureScale = 0.8f;
 
         public ShaderPreview()
         {
@@ -96,7 +88,7 @@ namespace ShaderPreview
             TextureMaxScreenRect = new(Vec2.Zero, screenSize);
 
             Vec2 size = screenSize;
-            size *= .8f;
+            size *= TextureScale;
 
             Vec2 textureSize = BaseTexture is null ? new(100) : new(BaseTexture.Width, BaseTexture.Height);
 
@@ -139,7 +131,7 @@ namespace ShaderPreview
             SpriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(null);
-            
+
             GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
 
             SpriteBatch.Begin();
@@ -150,7 +142,8 @@ namespace ShaderPreview
             ParameterInput.Draw(SpriteBatch);
             Interface.Draw(SpriteBatch);
 
-            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10), Color.White, Color.Black);
+            SpriteBatch.DrawStringShaded(Consolas10, $"Texture size: {TextureScreenRect.Width:0.##}, {TextureScreenRect.Height:0.##}", new(10, 10), Color.White, Color.Black);
+            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10, 30), Color.White, Color.Black);
 
             SpriteBatch.End();
 

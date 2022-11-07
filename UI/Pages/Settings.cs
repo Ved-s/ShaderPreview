@@ -88,8 +88,32 @@ namespace ShaderPreview.UI.Pages
                                 Text = "Selected: " + (Path.GetFileName(ShaderPreview.BaseTexturePath) ?? "None"),
                                 TextColor = new(.8f, .8f, .8f),
                                 Height = 0,
-                            }.Assign(out TextureNameLabel)
-                       
+                            }.Assign(out TextureNameLabel),
+
+                            new UIElement() { Height = 10 },
+
+                            new UILabel
+                            {
+                                Height = 0,
+                                Text = "Texture scale"
+                            },
+                            new UIScrollBar
+                            {
+                                Height = 8,
+                                Margin = new(4, 0),
+
+                                BarPadding = new(-4, 0),
+                                BackColor = new(0, 0, 0, 100),
+
+                                BarSize = 8,
+                                BarSizeAbsolute = true,
+                                Horizontal = true,
+
+                                ScrollMin = 0.01f,
+                                ScrollMax = 1,
+                                ScrollPosition = ShaderPreview.TextureScale
+                            }.OnEvent(UIScrollBar.ScrollChanged, (_, v) => ShaderPreview.TextureScale = v)
+
                         }
                     }
                 }
