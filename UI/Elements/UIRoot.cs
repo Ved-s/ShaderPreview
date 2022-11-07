@@ -76,7 +76,7 @@ namespace ShaderPreview.UI.Elements
 
             if (MouseState.LeftButton != ButtonState.Pressed)
             {
-                UIElement? currentHover = GetElementAt(MousePosition, false);
+                UIElement? currentHover = Game.IsActive ? GetElementAt(MousePosition, false) : null;
 
                 if (currentHover != Hover)
                 {

@@ -34,7 +34,7 @@ namespace ShaderPreview.ParameterInputs
             };
 			button.OnEvent(UIElement.ClickEvent, (_, value) =>
 			{
-                Util.SelectFile("Select texture", path =>
+                Util.SelectFileToOpen("Select texture", path =>
                 {
                     try
                     {

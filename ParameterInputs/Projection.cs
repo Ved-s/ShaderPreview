@@ -22,9 +22,9 @@ namespace ShaderPreview.ParameterInputs
 
         public override void UpdateSelf(EffectParameter parameter, bool selected)
         {
-            Viewport vp = ShaderPreview.Instance.GraphicsDevice.Viewport;
+            RenderTarget2D rt = ShaderPreview.RenderTarget;
 
-            Matrix projection = Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1);
+            Matrix projection = Matrix.CreateOrthographicOffCenter(0, rt.Width, rt.Height, 0, 0, 1);
             parameter.SetValue(projection);
         }
     }

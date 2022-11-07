@@ -9,7 +9,7 @@ namespace ShaderPreview
 {
     public static class Util
     {
-        public static void SelectFile(string title, Action<string> fileSelected, string? filter = null)
+        public static void SelectFileToOpen(string title, Action<string> fileSelected, string? filter = null)
         {
             Thread thread = new(() =>
             {
@@ -23,6 +23,20 @@ namespace ShaderPreview
                 {
                     fileSelected(ofd.FileName);
                 }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+        }
+        public static void SelectFileToSave(string title, Action<bool, string> fileSelected, string? filter = null)
+        {
+            Thread thread = new(() =>
+            {
+                System.Windows.Forms.SaveFileDialog ofd = new()
+                {
+                    Title = title,
+                    Filter = filter
+                };
+                fileSelected(ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK, ofd.FileName);
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();

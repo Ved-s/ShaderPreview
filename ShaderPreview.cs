@@ -1,11 +1,20 @@
 ﻿extern alias mgfxc;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using ShaderPreview.ParameterInputs;
 using ShaderPreview.Structures;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Extensions;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json.Nodes;
+
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace ShaderPreview
 {
@@ -25,6 +34,8 @@ namespace ShaderPreview
         public static Rect TextureScreenRect;
         public static Rect TextureMaxScreenRect;
         public static GameTime GameTime = new();
+
+        public static RenderTarget2D RenderTarget = null!;
 
         public ShaderPreview()
         {
@@ -94,22 +105,29 @@ namespace ShaderPreview
 
             TextureScreenRect = new Rect(((screenSize - size) / 2).Rounded(), size.Rounded());
 
+            int rtWidth = (int)Math.Ceiling(TextureMaxScreenRect.Width);
+            int rtHeight = (int)Math.Ceiling(TextureMaxScreenRect.Height);
+
+            if (RenderTarget is null || RenderTarget.Width != rtWidth || RenderTarget.Height != rtHeight)
+                RenderTarget = new(GraphicsDevice, rtWidth, rtHeight, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+
             ShaderCompiler.EndCompiling();
             Interface.Update();
             ParameterInput.Update();
+            ImageExporting.Update();
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
             GraphicsDevice.ScissorRectangle = new(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
+            GraphicsDevice.SetRenderTarget(RenderTarget);
+            GraphicsDevice.Clear(Color.Transparent);
 
             // TODO: make this configurable from UI
             SpriteBatch.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone);
-
-            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Color.White * .3f);
 
             if (ShaderCompiler.Shader is not null)
             {
@@ -119,7 +137,16 @@ namespace ShaderPreview
             SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Color.White);
 
             SpriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+            
+            GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
+
             SpriteBatch.Begin();
+
+            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Color.White * .3f);
+            SpriteBatch.Draw(RenderTarget, Vec2.Zero, Color.White);
+
             ParameterInput.Draw(SpriteBatch);
             Interface.Draw(SpriteBatch);
 

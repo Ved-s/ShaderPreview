@@ -35,7 +35,7 @@ namespace ShaderPreview.UI.Pages
                                 Height = 18
                             }.OnEvent(UIElement.ClickEvent, (_, _) =>
                             {
-                                Util.SelectFile("Select shader file", ShaderCompiler.SetShaderFilePath, "HLSL Shader (.fx)|*.fx|All files|*.*");
+                                Util.SelectFileToOpen("Select shader file", ShaderCompiler.SetShaderFilePath, "HLSL Shader (.fx)|*.fx|All files|*.*");
                             }),
                             new UILabel
                             {
@@ -68,7 +68,7 @@ namespace ShaderPreview.UI.Pages
                                 Height = 18
                             }.OnEvent(UIElement.ClickEvent, (_, _) =>
                             {
-                                Util.SelectFile("Select texture file", file =>
+                                Util.SelectFileToOpen("Select texture file", file =>
                                 {
                                     try
                                     {
