@@ -1,10 +1,9 @@
-﻿using Microsoft.Win32.SafeHandles;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ShaderPreview;
 using ShaderPreview.Structures;
 using ShaderPreview.UI.Elements;
-using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -75,12 +74,12 @@ namespace ShaderPreview.ParameterInputs
 
             Rect pointerRect = new(pos - size / 2, size);
 
-            spriteBatch.FillRectangle(pointerRect, Microsoft.Xna.Framework.Color.Yellow * (selected ? .8f : 0.3f));
+            spriteBatch.FillRectangle(pointerRect, Color.Yellow * (selected ? .8f : 0.3f));
 
             if (selected)
-                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
+                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White, Color.Black);
             else
-                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White * .3f);
+                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White * .3f);
         }
 
         protected override UIElement? GetConfigInterface()
@@ -90,13 +89,13 @@ namespace ShaderPreview.ParameterInputs
                 AutoSize = true,
                 ElementSpacing = 5,
                 Height = 0,
-                Elements = 
+                Elements =
                 {
                     new UIFlow
                     {
                         Height = 0,
                         ElementSpacing = 5,
-                        Elements = 
+                        Elements =
                         {
                             new UILabel
                             {
@@ -111,7 +110,7 @@ namespace ShaderPreview.ParameterInputs
                                 Text = TexturePosAsOrigin ? "Texture" : "Screen",
                                 Width = 80,
                                 Height = 18
-                            }.OnEvent(UIElement.ClickEvent, (btn, _) => 
+                            }.OnEvent(UIElement.ClickEvent, (btn, _) =>
                             {
                                 TexturePosAsOrigin = !TexturePosAsOrigin;
                                 btn.Text = TexturePosAsOrigin ? "Texture" : "Screen";
@@ -131,9 +130,9 @@ namespace ShaderPreview.ParameterInputs
                                 Selected = ReverseX,
                                 Width = 0,
                                 Height = 0,
-                                SelectedBackColor = Microsoft.Xna.Framework.Color.White,
-                                SelectedTextColor = Microsoft.Xna.Framework.Color.Black
-                            }.OnEvent(UIElement.ClickEvent, (btn, _) => 
+                                SelectedBackColor = Color.White,
+                                SelectedTextColor = Color.Black
+                            }.OnEvent(UIElement.ClickEvent, (btn, _) =>
                             {
                                 ReverseX = btn.Selected;
                             }),
@@ -144,8 +143,8 @@ namespace ShaderPreview.ParameterInputs
                                 Selected = ReverseY,
                                 Width = 0,
                                 Height = 0,
-                                SelectedBackColor = Microsoft.Xna.Framework.Color.White,
-                                SelectedTextColor = Microsoft.Xna.Framework.Color.Black
+                                SelectedBackColor = Color.White,
+                                SelectedTextColor = Color.Black
                             }.OnEvent(UIElement.ClickEvent, (btn, _) =>
                             {
                                 ReverseY = btn.Selected;

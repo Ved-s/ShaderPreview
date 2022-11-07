@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace ShaderPreview.ParameterInputs
 {
-    public class Color : ParameterInput
+    public class ArgbColor : ParameterInput
     {
         public override string DisplayName => "Color";
 
-        Microsoft.Xna.Framework.Color CurrentColor = Microsoft.Xna.Framework.Color.Black;
+        Color CurrentColor = Color.Black;
 
         public override bool AppliesToParameter(EffectParameter parameter)
         {

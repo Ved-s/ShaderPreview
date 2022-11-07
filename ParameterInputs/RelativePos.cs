@@ -5,6 +5,7 @@ using ShaderPreview.Structures;
 using System;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using ShaderPreview;
 
 namespace ShaderPreview.ParameterInputs
 {
@@ -60,12 +61,12 @@ namespace ShaderPreview.ParameterInputs
 
             Rect pointerRect = new(pos - size / 2, size);
 
-            spriteBatch.FillRectangle(pointerRect, Microsoft.Xna.Framework.Color.Yellow * (selected ? .8f : 0.3f));
+            spriteBatch.FillRectangle(pointerRect, Color.Yellow * (selected ? .8f : 0.3f));
 
             if (selected)
-                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
+                spriteBatch.DrawStringShaded(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White, Color.Black);
             else
-                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Microsoft.Xna.Framework.Color.White * .3f);
+                spriteBatch.DrawString(ShaderPreview.Consolas10, ParameterName, pos + new Vec2(7, 2), Color.White * .3f);
         }
 
         public override JsonNode SaveState()

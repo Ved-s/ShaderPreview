@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 
 namespace ShaderPreview.ParameterInputs
 {
-	public class Texture : ParameterInput
+    public class Texture : ParameterInput
     {
         public Texture2D? TextureValue;
         public string? TexturePath;

@@ -4,10 +4,12 @@ using ShaderPreview.UI.Helpers;
 using System;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace ShaderPreview.UI
 {
-    public class AnimationSlider : UIPanel
+    public class AnimationSlider : UIPanel, IState
     {
         public static readonly ElementEvent<ValueChangedArgs, AnimationSlider> ValueChanged = new();
 
@@ -16,7 +18,8 @@ namespace ShaderPreview.UI
 
         UIScrollBar[] ValueScrolls;
         UIButton[] PlayButtons;
-        UINumberInput MinInput, MaxInput, StepInput;
+        UIButton[] AnimationButtons;
+        UINumberInput MinInput, MaxInput, StepInput, SpeedInput;
         bool IgnoreScrollEvents;
         float Step = 0;
         float Speed = 1;
@@ -36,6 +39,7 @@ namespace ShaderPreview.UI
             ValueArray = new float[inputCount];
             ValueScrolls = new UIScrollBar[inputCount];
             PlayButtons = new UIButton[inputCount];
+            AnimationButtons = new UIButton[4];
             AnimationActive = new bool[inputCount];
             AnimationReverse = new bool[inputCount];
 
@@ -175,7 +179,7 @@ namespace ShaderPreview.UI
                 {
                     for (int i = 0; i < 4; i++)
                     {
-                        flow.Elements.Add(new UIButton
+                        flow.Elements.Add(AnimationButtons[i] = new UIButton
                         {
                             Image = Content.AnimationAssets,
                             ImageFrame = new(i * 16, 0, 16, 16),
@@ -189,7 +193,6 @@ namespace ShaderPreview.UI
                             RadioGroup = group,
                             RadioTag = (AnimationMode)i,
                             CanDeselect = false,
-
                         });
                     }
                     flow.Elements.Add(new UIContainer
@@ -212,7 +215,8 @@ namespace ShaderPreview.UI
                                 Width = new(-40, 1),
                                 Left = new(0, 1, -1),
                                 Value = 1
-                            }.OnEvent(UINumberInput.ValueChanged, (inp, _) => Speed = (float)inp.Value)
+                            }.Assign(out SpeedInput)
+                            .OnEvent(UINumberInput.ValueChanged, (inp, _) => Speed = (float)inp.Value)
                         }
                     });
                 })
@@ -358,6 +362,41 @@ namespace ShaderPreview.UI
             value = MathF.Floor(value / absStep) * absStep;
             value += MathF.Round(rem / absStep) * absStep;
             return value;
+        }
+
+        public JsonNode? SaveState()
+        {
+            return new JsonObject
+            {
+                ["min"] = Min,
+                ["max"] = Max,
+                ["step"] = Step,
+                ["speed"] = Speed,
+                ["anim"] = (int)CurrentAnimation
+            };
+        }
+
+        public void LoadState(JsonNode node)
+        {
+            if (node is not JsonObject obj)
+                return;
+
+            if (obj.TryGet("min", out float min)) MinInput.Value = Min = min;
+            if (obj.TryGet("max", out float max)) MaxInput.Value = Max = max;
+            if (obj.TryGet("step", out float step)) StepInput.Value = Step = step;
+            if (obj.TryGet("speed", out float speed)) SpeedInput.Value = Speed = speed;
+            if (obj.TryGet("anim", out int anim) && anim > 0 && anim < AnimationButtons.Length)
+            {
+                AnimationButtons[anim].Selected = true;
+                CurrentAnimation = (AnimationMode)anim;
+            }
+
+            for (int i = 0; i < ValueScrolls.Length; i++)
+            {
+                UIScrollBar sb = ValueScrolls[i];
+                sb.ScrollMin = Min;
+                sb.ScrollMax = Max;
+            }
         }
 
         public record struct ValueChangedArgs(int Index, float Value);

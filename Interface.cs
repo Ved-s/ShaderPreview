@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-
 namespace ShaderPreview
 {
     public static class Interface
@@ -40,8 +39,8 @@ namespace ShaderPreview
 
                         Margin = 5,
 
-                        BackColor = Microsoft.Xna.Framework.Color.Transparent,
-                        BorderColor = Microsoft.Xna.Framework.Color.Transparent,
+                        BackColor = Color.Transparent,
+                        BorderColor = Color.Transparent,
 
                         CanGrabTop = false,
                         CanGrabRight = false,

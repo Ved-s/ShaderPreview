@@ -21,8 +21,15 @@ namespace ShaderPreview.ParameterInputs
                 foreach (var kvp in CurrentActiveParams)
                 {
                     JsonObject input = kvp.Value.Save();
-                    if (input is null)
-                        continue;
+
+                    if (kvp.Value.configInterface is not null)
+                    {
+                        JsonNode? uistate = kvp.Value.SaveUIState();
+
+                        if (uistate is not null)
+                            input["config"] = uistate;
+                    }
+
 
                     state[kvp.Key] = input;
                 }
@@ -39,15 +46,25 @@ namespace ShaderPreview.ParameterInputs
         private static JsonObject? StateData;
         private static Dictionary<string, (EffectParameterType type, EffectParameterClass @class, int rows, int cols)> CurrentShaderParamInfos = new();
 
-
         public abstract string DisplayName { get; }
         public string ParameterName { get; internal set; } = null!;
         public UIElement? ConfigInterface
         {
-            get => configInterface ??= GetConfigInterface();
+            get
+            {
+                if (configInterface is not null)
+                    return configInterface;
+
+                configInterface = GetConfigInterface();
+                if (uiState is not null)
+                    LoadUIState(uiState);
+
+                return configInterface;
+            }
             protected set => configInterface = value;
         }
         private UIElement? configInterface;
+        private JsonNode? uiState;
 
         public static void ShaderChanged()
         {
@@ -117,6 +134,9 @@ namespace ShaderPreview.ParameterInputs
                     if (input is null)
                         continue;
 
+                    if (obj.TryGet("config", out JsonNode? config))
+                        input.uiState = config;
+
                     CurrentActiveParams[kvp.Key] = input;
                 }
                 StateData = null;
@@ -164,7 +184,22 @@ namespace ShaderPreview.ParameterInputs
         public virtual void DrawSelf(SpriteBatch spriteBatch, bool selected) { }
 
         public virtual ParameterInput NewInstance(EffectParameter parameter) => (ParameterInput)Activator.CreateInstance(GetType())!;
-        public virtual JsonNode SaveState() { return null!; }
+
+        public virtual JsonNode? SaveState() { return null!; }
         public virtual void LoadState(JsonNode node) { }
+
+        public virtual JsonNode? SaveUIState()
+        {
+            if (configInterface is not IState uistate)
+                return null;
+            return uistate.SaveState();
+        }
+        public virtual void LoadUIState(JsonNode node)
+        {
+            if (configInterface is not IState uistate)
+                return;
+
+            uistate.LoadState(node);
+        }
     }
 }

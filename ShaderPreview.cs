@@ -1,22 +1,11 @@
 ﻿extern alias mgfxc;
-
-using mgfxc::MonoGame.Effect;
-using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using ShaderPreview.ParameterInputs;
 using ShaderPreview.Structures;
 using System;
 using System.IO;
-using System.Net.NetworkInformation;
-using System.Reflection;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace ShaderPreview
 {
@@ -64,10 +53,10 @@ namespace ShaderPreview
                 }
                 catch { }
             }
-            
+
             if (ShaderCompiler.ShaderPath.IsNullEmptyOrWhitespace())
                 ShaderCompiler.SetShaderFilePath("Shader.fx");
-            
+
             base.Initialize();
         }
 
@@ -75,9 +64,9 @@ namespace ShaderPreview
         {
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             Pixel = new(GraphicsDevice, 1, 1);
-            Pixel.SetData(new Microsoft.Xna.Framework.Color[] { Microsoft.Xna.Framework.Color.White });
+            Pixel.SetData(new Color[] { Color.White });
             Consolas10 = Content.Load<SpriteFont>("Consolas10");
-            
+
             UI.Helpers.Content.Load(Content);
             Interface.Init();
             Interface.Root.Font = Consolas10;
@@ -114,27 +103,27 @@ namespace ShaderPreview
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Microsoft.Xna.Framework.Color(.1f, .1f, .1f));
+            GraphicsDevice.Clear(new Color(.1f, .1f, .1f));
             GraphicsDevice.ScissorRectangle = new(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // TODO: make this configurable from UI
             SpriteBatch.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone);
 
-            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Microsoft.Xna.Framework.Color.White * .3f);
+            SpriteBatch.DrawRectangle(TextureScreenRect - new Offset4(1), Color.White * .3f);
 
             if (ShaderCompiler.Shader is not null)
             {
                 ShaderCompiler.Shader.CurrentTechnique.Passes[0].Apply();
             }
 
-            SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Microsoft.Xna.Framework.Color.White);
+            SpriteBatch.Draw(BaseTexture ?? Pixel, TextureScreenRect, Color.White);
 
             SpriteBatch.End();
             SpriteBatch.Begin();
             ParameterInput.Draw(SpriteBatch);
             Interface.Draw(SpriteBatch);
 
-            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10), Microsoft.Xna.Framework.Color.White, Microsoft.Xna.Framework.Color.Black);
+            SpriteBatch.DrawStringShaded(Consolas10, ShaderCompiler.Errors, new(10), Color.White, Color.Black);
 
             SpriteBatch.End();
 
@@ -154,7 +143,7 @@ namespace ShaderPreview
             state["texture"] = BaseTexturePath;
             state["inputs"] = ParameterInput.State;
         }
-        
+
         private void LoadState(JsonObject state)
         {
             if (state.TryGet("inputs", out JsonObject? inputs))

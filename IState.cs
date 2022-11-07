@@ -24,7 +24,10 @@ namespace ShaderPreview
         {
             JsonObject obj = new();
             obj["name"] = state.GetType().Name;
-            obj["data"] = state.SaveState();
+
+            JsonNode? data = state.SaveState();
+            if (data is not null)
+                obj["data"] = data;
             return obj;
         }
 
@@ -52,7 +55,7 @@ namespace ShaderPreview
             return instance;
         }
 
-        public JsonNode SaveState();
+        public JsonNode? SaveState();
         public void LoadState(JsonNode node);
     }
 }
